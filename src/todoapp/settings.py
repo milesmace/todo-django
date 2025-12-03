@@ -179,3 +179,7 @@ if DEBUG:
 
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
     INTERNAL_IPS += [ip[:-1] + "1" for ip in ips]
+
+APP_CONFIG = {
+    "APP_USERS_GROUP_NAME": "App Users",
+}

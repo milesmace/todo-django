@@ -1,6 +1,7 @@
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
+from todoapp.settings import APP_CONFIG
 
 from todo.models import Todo, TodoGroup
 
@@ -9,7 +10,7 @@ class Command(BaseCommand):
     help = "Creates the 'Common Users' Django group and assigns permissions"
 
     def handle(self, *args, **options):
-        group_name = "Common Users"
+        group_name = APP_CONFIG["APP_USERS_GROUP_NAME"]
         group, created = Group.objects.get_or_create(name=group_name)
 
         # Get content types for Todo and TodoGroup models

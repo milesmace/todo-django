@@ -2,12 +2,13 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.exceptions import PermissionDenied
 
 from .models import Todo, TodoGroup
+from .permissions import IsAppUserGroupMember
 from .serializers import TodoGroupSerializer, TodoSerializer
 
 
 class TodoGroupViewSet(viewsets.ModelViewSet):
     serializer_class = TodoGroupSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAppUserGroupMember]
 
     def get_queryset(self):
         return TodoGroup.objects.filter(owner=self.request.user)
@@ -18,7 +19,7 @@ class TodoGroupViewSet(viewsets.ModelViewSet):
 
 class TodoViewSet(viewsets.ModelViewSet):
     serializer_class = TodoSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAppUserGroupMember]
 
     def get_queryset(self):
         # Only return todos that belong to groups owned by the current user
