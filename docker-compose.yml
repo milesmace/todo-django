@@ -30,6 +30,11 @@ services:
     depends_on:
       db:
         condition: service_healthy
+  mailcatcher:
+    image: dockage/mailcatcher:0.9.0
+    ports:
+      - 1081:1080
+
 
 volumes:
   postgres_data:
