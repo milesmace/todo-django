@@ -11,7 +11,7 @@ from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
 from django.views import View
 
-from .frontend_models import get_frontend_model
+from .accessor import config
 from .models import ConfigValue
 from .registry import config_registry
 
@@ -105,33 +105,20 @@ class ConfigAppDetailView(View):
         for section_name, section in config_def.get_sections():
             section_key = section_name.lower()
             for field_name, field in section.get_fields().items():
-                path = f"{section_key}/{field_name}"
                 input_name = f"config_{section_key}_{field_name}"
 
                 # Skip if field wasn't changed
                 if input_name not in changed_fields:
                     continue
 
-                # Get the frontend model to process the value
-                frontend_model = get_frontend_model(
-                    field.frontend_model,
-                    field,
-                    None,
-                )
-
-                # Get raw value from POST (handle checkbox specially)
+                # Get raw value from POST and process through frontend model
                 raw_value = request.POST.get(input_name)
-
-                # Convert and serialize the value
+                frontend_model = field.get_frontend_model_instance()
                 processed_value = frontend_model.get_value(raw_value)
-                serialized_value = frontend_model.serialize_value(processed_value)
 
-                # Save to database
-                ConfigValue.objects.update_or_create(
-                    app_label=app_label,
-                    path=path,
-                    defaults={"value": serialized_value},
-                )
+                # Use the accessor to set the value (dot notation)
+                full_path = f"{app_label}.{section_key}.{field_name}"
+                config.set(full_path, processed_value)
                 saved_count += 1
 
         if saved_count > 0:
@@ -157,21 +144,18 @@ class ConfigAppDetailView(View):
             fields_data = []
 
             for field_name, field in section.get_fields().items():
-                path = f"{section_key}/{field_name}"
+                # DB path uses dot notation
+                db_path = f"{section_key}.{field_name}"
 
                 # Get stored value or use default
-                stored_value = stored_values.get(path)
+                stored_value = stored_values.get(db_path)
                 if stored_value is None:
                     current_value = field.default
                 else:
                     current_value = stored_value
 
                 # Get the frontend model and render the input
-                frontend_model = get_frontend_model(
-                    field.frontend_model,
-                    field,
-                    current_value,
-                )
+                frontend_model = field.get_frontend_model_instance(current_value)
 
                 fields_data.append(
                     {

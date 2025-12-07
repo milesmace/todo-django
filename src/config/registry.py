@@ -8,6 +8,7 @@ auto-discovered when Django starts.
 Usage:
     # In your app's sysconfig.py
     from config.registry import register_config, Section, Field
+    from config.frontend_models import StringFrontendModel, IntegerFrontendModel
 
     @register_config('myapp')
     class MyAppConfig:
@@ -16,14 +17,17 @@ Usage:
             sort_order = 10
 
             some_setting = Field(
-                frontend_model='string',
+                StringFrontendModel,
                 label='Some Setting',
                 comment='Help text for this setting',
                 default='default_value',
             )
 """
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from config.frontend_models import BaseFrontendModel
 
 
 class Field:
@@ -37,7 +41,7 @@ class Field:
 
     def __init__(
         self,
-        frontend_model: str = "string",
+        frontend_model: "type[BaseFrontendModel]",
         label: str = "",
         comment: str = "",
         default: Any = None,
@@ -48,8 +52,8 @@ class Field:
         Initialize a configuration field.
 
         Args:
-            frontend_model: The type of input to render ('string', 'integer',
-                          'decimal', 'boolean', 'select', etc.)
+            frontend_model: The FrontendModel class to use for rendering
+                          (e.g., StringFrontendModel, IntegerFrontendModel)
             label: Human-readable label for the field
             comment: Help text/comment to assist in filling the config.
                     Supports HTML markup (e.g., <code>, <a>, <strong>).
@@ -69,8 +73,15 @@ class Field:
         self.name: str = ""
         self.path: str = ""
 
+    def get_frontend_model_instance(
+        self, current_value: Any = None
+    ) -> "BaseFrontendModel":
+        """Create an instance of the frontend model for this field."""
+        return self.frontend_model(self, current_value)
+
     def __repr__(self):
-        return f"Field(name={self.name!r}, frontend_model={self.frontend_model!r})"
+        model_name = getattr(self.frontend_model, "__name__", str(self.frontend_model))
+        return f"Field(name={self.name!r}, frontend_model={model_name})"
 
 
 class SectionMeta(type):
