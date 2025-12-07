@@ -87,13 +87,30 @@ class ConfigAppDetailView(View):
             messages.error(request, f"No configuration found for app: {app_label}")
             return redirect("config:app_list")
 
-        # Process each field in the configuration
+        # Get the list of changed fields (optimization)
+        changed_fields_str = request.POST.get("changed_fields", "").strip()
+        changed_fields = (
+            {f for f in changed_fields_str.split(",") if f}
+            if changed_fields_str
+            else set()
+        )
+
+        # If no fields were changed, skip saving entirely
+        if not changed_fields:
+            messages.info(request, "No changes to save.")
+            return redirect("config:app_detail", app_label=app_label)
+
+        # Process only changed fields
         saved_count = 0
         for section_name, section in config_def.get_sections():
             section_key = section_name.lower()
             for field_name, field in section.get_fields().items():
                 path = f"{section_key}/{field_name}"
                 input_name = f"config_{section_key}_{field_name}"
+
+                # Skip if field wasn't changed
+                if input_name not in changed_fields:
+                    continue
 
                 # Get the frontend model to process the value
                 frontend_model = get_frontend_model(
@@ -117,10 +134,14 @@ class ConfigAppDetailView(View):
                 )
                 saved_count += 1
 
-        messages.success(
-            request,
-            f"Configuration saved successfully. ({saved_count} settings updated)",
-        )
+        if saved_count > 0:
+            messages.success(
+                request,
+                f"Configuration saved successfully. ({saved_count} setting{'s' if saved_count != 1 else ''} updated)",
+            )
+        else:
+            messages.info(request, "No changes to save.")
+
         return redirect("config:app_detail", app_label=app_label)
 
     def _build_sections_data(self, app_label: str, config_def) -> list[dict]:

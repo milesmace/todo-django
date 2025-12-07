@@ -1,17 +1,20 @@
 <div class="config-field">
-    <label for="{{ input_id }}" class="config-field-label">
-        {{ field.label|default:field.name }}
-    </label>
-    <div class="config-field-input">
-        {% block input %}
-        <input type="text"
-               name="{{ input_name }}"
-               id="{{ input_id }}"
-               value="{{ value|default:'' }}"
-               class="vTextField">
-        {% endblock %}
+    <div class="config-field-label-col">
+        <label for="{{ input_id }}" class="config-field-label">
+            {{ field.label|default:field.name }}
+        </label>
     </div>
-    {% if field.comment %}
-    <p class="config-field-comment help">{{ field.comment }}</p>
-    {% endif %}
+    <div class="config-field-input-col">
+        <div class="config-input-wrapper">
+            <div class="config-field-input">
+                <input type="text"
+                       name="{{ input_name }}"
+                       id="{{ input_id }}"
+                       value="{{ value|default:'' }}">
+            </div>
+            {% if field.comment %}
+            <div class="config-field-comment">{{ field.comment|safe }}</div>
+            {% endif %}
+        </div>
+    </div>
 </div>

@@ -51,7 +51,8 @@ class Field:
             frontend_model: The type of input to render ('string', 'integer',
                           'decimal', 'boolean', 'select', etc.)
             label: Human-readable label for the field
-            comment: Help text/comment to assist in filling the config
+            comment: Help text/comment to assist in filling the config.
+                    Supports HTML markup (e.g., <code>, <a>, <strong>).
             default: Default value if no value is stored in the database
             sort_order: Order in which to display this field within its section
             **kwargs: Additional arguments passed to the frontend model
