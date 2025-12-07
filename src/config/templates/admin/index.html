@@ -1,0 +1,43 @@
+{% extends "admin/index.html" %}
+
+{% block content %}
+{{ block.super }}
+
+<style>
+    .config-admin-link {
+        margin: 20px 0;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 8px;
+        color: white;
+    }
+    .config-admin-link h2 {
+        margin: 0 0 10px 0;
+        font-size: 18px;
+        color: white;
+    }
+    .config-admin-link p {
+        margin: 0 0 15px 0;
+        opacity: 0.9;
+        font-size: 14px;
+    }
+    .config-admin-link a.config-btn {
+        display: inline-block;
+        background: rgba(255,255,255,0.2);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: background 0.2s ease;
+    }
+    .config-admin-link a.config-btn:hover {
+        background: rgba(255,255,255,0.3);
+    }
+</style>
+
+<div class="config-admin-link">
+    <p>Manage application settings and preferences for all installed apps.</p>
+    <a href="{% url 'config:app_list' %}" class="config-btn">Open Configuration Panel &rarr;</a>
+</div>
+{% endblock %}

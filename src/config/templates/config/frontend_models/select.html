@@ -1,0 +1,18 @@
+<div class="config-field">
+    <label for="{{ input_id }}" class="config-field-label">
+        {{ field.label|default:field.name }}
+    </label>
+    <div class="config-field-input">
+        <select name="{{ input_name }}" id="{{ input_id }}" class="vTextField">
+            <option value="">---------</option>
+            {% for choice_value, choice_label in choices %}
+            <option value="{{ choice_value }}" {% if value == choice_value %}selected{% endif %}>
+                {{ choice_label }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    {% if field.comment %}
+    <p class="config-field-comment help">{{ field.comment }}</p>
+    {% endif %}
+</div>

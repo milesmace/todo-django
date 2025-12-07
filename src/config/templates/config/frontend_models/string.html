@@ -1,0 +1,17 @@
+<div class="config-field">
+    <label for="{{ input_id }}" class="config-field-label">
+        {{ field.label|default:field.name }}
+    </label>
+    <div class="config-field-input">
+        <input type="text"
+               name="{{ input_name }}"
+               id="{{ input_id }}"
+               value="{{ value|default:'' }}"
+               class="vTextField"
+               {% if field.extra.placeholder %}placeholder="{{ field.extra.placeholder }}"{% endif %}
+               {% if field.extra.maxlength %}maxlength="{{ field.extra.maxlength }}"{% endif %}>
+    </div>
+    {% if field.comment %}
+    <p class="config-field-comment help">{{ field.comment }}</p>
+    {% endif %}
+</div>

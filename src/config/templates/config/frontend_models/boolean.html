@@ -1,0 +1,15 @@
+<div class="config-field config-field-checkbox">
+    <div class="config-field-input">
+        <input type="checkbox"
+               name="{{ input_name }}"
+               id="{{ input_id }}"
+               value="1"
+               {% if checked %}checked{% endif %}>
+        <label for="{{ input_id }}" class="config-field-label vCheckboxLabel">
+            {{ field.label|default:field.name }}
+        </label>
+    </div>
+    {% if field.comment %}
+    <p class="config-field-comment help">{{ field.comment }}</p>
+    {% endif %}
+</div>

@@ -1,0 +1,192 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | {{ site_title }}{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .config-form {
+        margin: 20px 0;
+    }
+    .config-section {
+        background: var(--body-bg, #fff);
+        border: 1px solid var(--hairline-color, #e8e8e8);
+        border-radius: 4px;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    .config-section-header {
+        background: var(--darkened-bg, #f8f8f8);
+        border-bottom: 1px solid var(--hairline-color, #e8e8e8);
+        padding: 15px 20px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        user-select: none;
+    }
+    .config-section-header:hover {
+        background: var(--selected-bg, #e4e4e4);
+    }
+    .config-section-header h2 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--body-fg, #333);
+    }
+    .config-section-toggle {
+        font-size: 12px;
+        color: var(--body-quiet-color, #666);
+        transition: transform 0.2s ease;
+    }
+    .config-section.collapsed .config-section-toggle {
+        transform: rotate(-90deg);
+    }
+    .config-section.collapsed .config-section-body {
+        display: none;
+    }
+    .config-section-body {
+        padding: 20px;
+    }
+    .config-field {
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--hairline-color, #e8e8e8);
+    }
+    .config-field:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+    .config-field-label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--body-fg, #333);
+    }
+    .config-field-input input[type="text"],
+    .config-field-input input[type="number"],
+    .config-field-input textarea,
+    .config-field-input select {
+        width: 100%;
+        max-width: 500px;
+        padding: 8px 12px;
+        border: 1px solid var(--hairline-color, #ccc);
+        border-radius: 4px;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+    .config-field-input input:focus,
+    .config-field-input textarea:focus,
+    .config-field-input select:focus {
+        border-color: var(--primary, #79aec8);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(121, 174, 200, 0.25);
+    }
+    .config-field-checkbox {
+        display: flex;
+        flex-direction: column;
+    }
+    .config-field-checkbox .config-field-input {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .config-field-checkbox .config-field-label {
+        margin-bottom: 0;
+        font-weight: normal;
+    }
+    .config-field-comment {
+        margin-top: 6px;
+        font-size: 12px;
+        color: var(--body-quiet-color, #666);
+    }
+    .config-submit {
+        margin-top: 20px;
+        padding: 20px;
+        background: var(--darkened-bg, #f8f8f8);
+        border-radius: 4px;
+        display: flex;
+        gap: 10px;
+    }
+    .config-submit input[type="submit"] {
+        background: var(--primary, #79aec8);
+        color: var(--primary-fg, #fff);
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+    }
+    .config-submit input[type="submit"]:hover {
+        background: var(--link-hover-color, #609ab6);
+    }
+    .config-submit .cancel-link {
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 20px;
+        color: var(--body-quiet-color, #666);
+        text-decoration: none;
+    }
+    .config-submit .cancel-link:hover {
+        color: var(--body-fg, #333);
+    }
+    .breadcrumbs {
+        padding: 10px 40px;
+        background: var(--breadcrumbs-bg, #79aec8);
+        color: var(--breadcrumbs-fg, #c4dce8);
+    }
+    .breadcrumbs a {
+        color: var(--breadcrumbs-link-fg, #fff);
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; <a href="{% url 'config:app_list' %}">System Configuration</a>
+    &rsaquo; <span>{{ app_label|title }}</span>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<form method="post" class="config-form">
+    {% csrf_token %}
+
+    {% for section in sections %}
+    <div class="config-section" data-section="{{ section.name }}">
+        <div class="config-section-header" onclick="toggleSection(this)">
+            <h2>{{ section.label }}</h2>
+            <span class="config-section-toggle">&#9660;</span>
+        </div>
+        <div class="config-section-body">
+            {% for field_data in section.fields %}
+                {{ field_data.rendered_input|safe }}
+            {% empty %}
+                <p>No fields in this section.</p>
+            {% endfor %}
+        </div>
+    </div>
+    {% empty %}
+        <p>No configuration sections defined for this app.</p>
+    {% endfor %}
+
+    {% if sections %}
+    <div class="config-submit">
+        <input type="submit" value="Save Configuration">
+        <a href="{% url 'config:app_list' %}" class="cancel-link">Cancel</a>
+    </div>
+    {% endif %}
+</form>
+
+<script>
+function toggleSection(header) {
+    const section = header.closest('.config-section');
+    section.classList.toggle('collapsed');
+}
+</script>
+{% endblock %}

@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     # Apps
+    "config",
     "core",
     "todo",
 ]
