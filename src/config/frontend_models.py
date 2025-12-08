@@ -200,6 +200,71 @@ class SelectFrontendModel(BaseFrontendModel):
         return str(raw_value)
 
 
+class SecretFrontendModel(BaseFrontendModel):
+    """
+    Frontend model for sensitive/secret values like API keys.
+
+    - Renders as a password input (masked)
+    - Encrypts value before storing in database
+    - Decrypts value when retrieved
+    - Shows placeholder when value exists, never displays actual value
+    """
+
+    template_name = "config/frontend_models/secret.html"
+
+    # Placeholder shown when a secret value exists
+    SECRET_PLACEHOLDER = "••••••••••••••••••••••••"
+
+    def get_context(self) -> dict:
+        context = super().get_context()
+        # Never send the actual value to the template
+        # Just indicate whether a value exists
+        context["has_value"] = (
+            self.current_value is not None and self.current_value != ""
+        )
+        context["placeholder"] = self.SECRET_PLACEHOLDER
+        # Remove the actual value from context
+        context["value"] = ""
+        return context
+
+    def get_value(self, raw_value: str | None) -> str | None:
+        """
+        Get the decrypted value.
+
+        Note: This is called when reading from the form submission.
+        The raw_value here is the plaintext entered by the user.
+        """
+        if raw_value is None or raw_value == "":
+            return None
+        return str(raw_value)
+
+    def serialize_value(self, value: Any) -> str | None:
+        """
+        Encrypt the value before storing in the database.
+        """
+        if value is None or value == "":
+            return None
+
+        from .encryption import encrypt
+
+        return encrypt(str(value))
+
+    @staticmethod
+    def decrypt_value(encrypted_value: str | None) -> str | None:
+        """
+        Decrypt a value retrieved from the database.
+
+        This is a static method that can be called by the accessor
+        to decrypt stored values.
+        """
+        if encrypted_value is None or encrypted_value == "":
+            return None
+
+        from .encryption import safe_decrypt
+
+        return safe_decrypt(encrypted_value) or None
+
+
 # Registry mapping frontend_model names to their classes
 FRONTEND_MODEL_REGISTRY: dict[str, type[BaseFrontendModel]] = {
     "string": StringFrontendModel,
@@ -213,6 +278,8 @@ FRONTEND_MODEL_REGISTRY: dict[str, type[BaseFrontendModel]] = {
     "bool": BooleanFrontendModel,
     "select": SelectFrontendModel,
     "dropdown": SelectFrontendModel,
+    "secret": SecretFrontendModel,
+    "password": SecretFrontendModel,
 }
 
 

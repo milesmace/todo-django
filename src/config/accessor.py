@@ -118,6 +118,12 @@ class ConfigAccessor:
         if raw_value is None:
             return field.default
 
+        # Special handling for SecretFrontendModel - decrypt the value
+        from .frontend_models import SecretFrontendModel
+
+        if field.frontend_model is SecretFrontendModel:
+            return SecretFrontendModel.decrypt_value(raw_value)
+
         frontend_model = field.get_frontend_model_instance(raw_value)
         return frontend_model.get_value(raw_value)
 
