@@ -217,7 +217,44 @@ class ConfigRegistry:
 
     def register(self, app_label: str, config_class: type) -> None:
         """Register a configuration class for an app."""
-        self._configs[app_label] = AppConfigDefinition(app_label, config_class)
+        config_def = AppConfigDefinition(app_label, config_class)
+        self._configs[app_label] = config_def
+
+        # Create DB records for all fields with default values
+        self._ensure_db_records(app_label, config_def)
+
+    def _ensure_db_records(
+        self, app_label: str, config_def: AppConfigDefinition
+    ) -> None:
+        """
+        Ensure database records exist for all config fields.
+
+        Creates records with default values for fields that don't have
+        a database entry yet.
+        """
+        try:
+            from config.models import ConfigValue
+
+            for section_name, section in config_def.get_sections():
+                section_key = section_name.lower()
+                for field_name, field in section.get_fields().items():
+                    db_path = f"{section_key}.{field_name}"
+
+                    # Serialize the default value
+                    default_value = None
+                    if field.default is not None:
+                        frontend_model = field.get_frontend_model_instance()
+                        default_value = frontend_model.serialize_value(field.default)
+
+                    # Create only if doesn't exist (don't overwrite existing values)
+                    ConfigValue.objects.get_or_create(
+                        app_label=app_label,
+                        path=db_path,
+                        defaults={"value": default_value},
+                    )
+        except Exception:
+            # Silently ignore DB errors during startup (e.g., migrations not run yet)
+            pass
 
     def get_config(self, app_label: str) -> AppConfigDefinition | None:
         """Get the configuration definition for an app."""
