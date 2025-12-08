@@ -54,7 +54,7 @@
     .config-field {
         display: grid;
         grid-template-columns: 1fr 3fr;
-        gap: 20px;
+        gap: 50px;
         padding: 20px;
         border-bottom: 1px solid var(--hairline-color, #e8e8e8);
         align-items: start;
@@ -64,6 +64,7 @@
     }
     .config-field-label-col {
         padding-top: 8px;
+        text-align: right;
     }
     .config-field-label {
         display: block;
@@ -250,10 +251,11 @@
     @media (max-width: 768px) {
         .config-field {
             grid-template-columns: 1fr;
-            gap: 10px;
+            gap: 20px;
         }
         .config-field-label-col {
             padding-top: 0;
+            text-align: left;
         }
     }
 </style>
