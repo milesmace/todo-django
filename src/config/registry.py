@@ -9,6 +9,7 @@ Usage:
     # In your app's sysconfig.py
     from config.registry import register_config, Section, Field
     from config.frontend_models import StringFrontendModel, IntegerFrontendModel
+    from config.validators import Required, EmailValidator, RangeValidator
 
     @register_config('myapp')
     class MyAppConfig:
@@ -21,6 +22,7 @@ Usage:
                 label='Some Setting',
                 comment='Help text for this setting',
                 default='default_value',
+                validators=[Required()],
             )
 """
 
@@ -29,6 +31,7 @@ from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from config.frontend_models import BaseFrontendModel
+    from config.validators import BaseValidator
 
 
 class Field:
@@ -47,6 +50,7 @@ class Field:
         comment: str = "",
         default: Any = None,
         sort_order: int = 0,
+        validators: "list[BaseValidator] | None" = None,
         on_save: "Callable[[str, Any, Any], None] | None" = None,
         **kwargs,
     ):
@@ -61,6 +65,8 @@ class Field:
                     Supports HTML markup (e.g., <code>, <a>, <strong>).
             default: Default value if no value is stored in the database
             sort_order: Order in which to display this field within its section
+            validators: List of validators to run before saving
+                       (e.g., [Required(), EmailValidator()])
             on_save: Optional callback called when value is saved.
                     Signature: (path: str, new_value: Any, old_value: Any) -> None
             **kwargs: Additional arguments passed to the frontend model
@@ -71,12 +77,20 @@ class Field:
         self.comment = comment
         self.default = default
         self.sort_order = sort_order
+        self.validators = validators or []
         self.on_save = on_save
         self.extra = kwargs
 
         # These will be set by the registry during registration
         self.name: str = ""
         self.path: str = ""
+
+    @property
+    def required(self) -> bool:
+        """Check if this field has a NotEmptyValidator (i.e., is required)."""
+        from config.validators import NotEmptyValidator
+
+        return any(isinstance(v, NotEmptyValidator) for v in self.validators)
 
     def get_frontend_model_instance(
         self, current_value: Any = None

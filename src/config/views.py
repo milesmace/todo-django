@@ -100,6 +100,38 @@ class ConfigAppDetailView(View):
             messages.info(request, "No changes to save.")
             return redirect("config:app_detail", app_label=app_label)
 
+        # First pass: validate all changed fields using their validators
+        from config.validators import validate_value
+
+        validation_errors = []
+        for section_name, section in config_def.get_sections():
+            section_key = section_name.lower()
+            for field_name, field in section.get_fields().items():
+                input_name = f"config_{section_key}_{field_name}"
+
+                # Only validate changed fields
+                if input_name not in changed_fields:
+                    continue
+
+                # Skip if field has no validators
+                if not field.validators:
+                    continue
+
+                raw_value = request.POST.get(input_name)
+                frontend_model = field.get_frontend_model_instance()
+                processed_value = frontend_model.get_value(raw_value)
+
+                # Run all validators for this field
+                field_label = field.label or field_name
+                errors = validate_value(processed_value, field.validators, field_label)
+                validation_errors.extend(errors)
+
+        # If validation errors, show them and redirect back
+        if validation_errors:
+            for error in validation_errors:
+                messages.error(request, error)
+            return redirect("config:app_detail", app_label=app_label)
+
         # Process only changed fields
         saved_count = 0
         for section_name, section in config_def.get_sections():

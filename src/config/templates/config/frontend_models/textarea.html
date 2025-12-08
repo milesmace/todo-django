@@ -1,7 +1,7 @@
 <div class="config-field">
     <div class="config-field-label-col">
         <label for="{{ input_id }}" class="config-field-label">
-            {{ field.label|default:field.name }}
+            {{ field.label|default:field.name }}{% if field.required %}<span class="config-field-required">*</span>{% endif %}
         </label>
     </div>
     <div class="config-field-input-col">
