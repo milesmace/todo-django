@@ -299,10 +299,57 @@
 </form>
 
 <script>
+const STORAGE_KEY = 'config_collapsed_sections';
+const APP_LABEL = '{{ app_label }}';
+
+// Get collapsed state from localStorage
+function getCollapsedState() {
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        return stored ? JSON.parse(stored) : {};
+    } catch (e) {
+        return {};
+    }
+}
+
+// Save collapsed state to localStorage
+function saveCollapsedState(state) {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+        // localStorage might be full or disabled
+    }
+}
+
+// Toggle section and persist state
 function toggleSection(header) {
     const section = header.closest('.config-section');
+    const sectionName = section.dataset.section;
+    const sectionId = `${APP_LABEL}.${sectionName}`;
+
     section.classList.toggle('collapsed');
+
+    // Persist state
+    const state = getCollapsedState();
+    if (section.classList.contains('collapsed')) {
+        state[sectionId] = true;
+    } else {
+        delete state[sectionId];
+    }
+    saveCollapsedState(state);
 }
+
+// Restore collapsed state on page load
+(function restoreCollapsedState() {
+    const state = getCollapsedState();
+    document.querySelectorAll('.config-section').forEach(function(section) {
+        const sectionName = section.dataset.section;
+        const sectionId = `${APP_LABEL}.${sectionName}`;
+        if (state[sectionId] === true) {
+            section.classList.add('collapsed');
+        }
+    });
+})();
 
 // Track changed fields for optimized saving
 (function() {

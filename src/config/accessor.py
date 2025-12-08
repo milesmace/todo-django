@@ -191,11 +191,26 @@ class ConfigAccessor:
             raise ConfigValueError(path, value, str(e)) from e
 
         db_path = self._to_db_path(section, field_name)
+
+        # Get old value before saving (for on_save callback)
+        old_value = None
+        if field.on_save:
+            try:
+                existing = ConfigValue.objects.get(app_label=app_label, path=db_path)
+                old_value = self._deserialize(field, existing.value)
+            except ConfigValue.DoesNotExist:
+                old_value = field.default
+
+        # Save to database
         ConfigValue.objects.update_or_create(
             app_label=app_label,
             path=db_path,
             defaults={"value": serialized},
         )
+
+        # Call on_save callback if defined
+        if field.on_save:
+            field.on_save(path, value, old_value)
 
     def set_many(self, values: dict[str, Any]) -> int:
         """

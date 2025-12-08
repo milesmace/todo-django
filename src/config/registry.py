@@ -24,6 +24,7 @@ Usage:
             )
 """
 
+from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -46,6 +47,7 @@ class Field:
         comment: str = "",
         default: Any = None,
         sort_order: int = 0,
+        on_save: "Callable[[str, Any, Any], None] | None" = None,
         **kwargs,
     ):
         """
@@ -59,6 +61,8 @@ class Field:
                     Supports HTML markup (e.g., <code>, <a>, <strong>).
             default: Default value if no value is stored in the database
             sort_order: Order in which to display this field within its section
+            on_save: Optional callback called when value is saved.
+                    Signature: (path: str, new_value: Any, old_value: Any) -> None
             **kwargs: Additional arguments passed to the frontend model
                      (e.g., 'choices' for select fields)
         """
@@ -67,6 +71,7 @@ class Field:
         self.comment = comment
         self.default = default
         self.sort_order = sort_order
+        self.on_save = on_save
         self.extra = kwargs
 
         # These will be set by the registry during registration
