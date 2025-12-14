@@ -33,8 +33,8 @@ class ConfigCache:
         return self.get(key) is not self.NOT_FOUND
 
     def set(self, key: str, value: Any) -> None:
-        """Set value in cache."""
-        cache.set(self.CACHE_KEY_PREFIX + key, value)
+        """Set value in cache with no expiration (invalidate only on change)."""
+        cache.set(self.CACHE_KEY_PREFIX + key, value, timeout=None)
 
     def invalidate(self, key: str) -> None:
         """Invalidate (delete) a cache key."""
