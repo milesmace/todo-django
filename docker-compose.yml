@@ -20,11 +20,10 @@ services:
     image: redis:7-alpine
     volumes:
       - redis-data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
     env_file:
       - .env
-    environment:
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-      REDIS_MAXMEMORY: ${REDIS_MAXMEMORY:-256mb}
+    command: redis-server /usr/local/etc/redis/redis.conf
   web:
     build: .
     command: sh -c "python src/manage.py migrate && python src/manage.py runserver 0.0.0.0:8000"
@@ -38,6 +37,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      cache:
+        condition: service_started
   mailcatcher:
     image: dockage/mailcatcher:0.9.0
     ports:

@@ -191,6 +191,6 @@ APP_CONFIG = {
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": "redis://cache:6379",
+        "LOCATION": config("REDIS_LOCATION"),
     },
 }
