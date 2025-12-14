@@ -187,3 +187,10 @@ if DEBUG:
 APP_CONFIG = {
     "APP_USERS_GROUP_NAME": "App Users",
 }
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://redis:6379",
+    },
+}

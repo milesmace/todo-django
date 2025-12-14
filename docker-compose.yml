@@ -16,7 +16,15 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
+  cache:
+    image: redis:7-alpine
+    volumes:
+      - redis-data:/data
+    env_file:
+      - .env
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_MAXMEMORY: ${REDIS_MAXMEMORY:-256mb}
   web:
     build: .
     command: sh -c "python src/manage.py migrate && python src/manage.py runserver 0.0.0.0:8000"
@@ -39,3 +47,4 @@ services:
 volumes:
   postgres_data:
   static_volume:
+  redis-data:
