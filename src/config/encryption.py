@@ -77,7 +77,8 @@ def is_encrypted(value: str) -> bool:
         # They also have a specific length pattern
         decoded = base64.urlsafe_b64decode(value.encode())
         return len(decoded) >= 57  # Minimum Fernet token size
-    except Exception:
+    except (ValueError, TypeError, UnicodeDecodeError):
+        # Invalid base64 or encoding issues mean it's not encrypted
         return False
 
 
@@ -96,5 +97,9 @@ def safe_decrypt(encrypted_value: str, default: str = "") -> str:
         return default
     try:
         return decrypt(encrypted_value)
-    except (InvalidToken, Exception):
+    except InvalidToken:
+        # Decryption failed (wrong key or corrupted data)
+        return default
+    except (ValueError, TypeError, UnicodeDecodeError):
+        # Invalid format or encoding issues
         return default

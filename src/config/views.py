@@ -64,6 +64,12 @@ class ConfigAppDetailView(View):
     template_name = "config/app_config.html"
 
     def get(self, request, app_label):
+        # Validate app_label to prevent potential issues
+        if not app_label or not isinstance(app_label, str) or not app_label.strip():
+            messages.error(request, "Invalid app label.")
+            return redirect("config:app_list")
+
+        app_label = app_label.strip()
         config_def = config_registry.get_config(app_label)
         if not config_def:
             messages.error(request, f"No configuration found for app: {app_label}")
@@ -82,6 +88,12 @@ class ConfigAppDetailView(View):
         return render(request, self.template_name, context)
 
     def post(self, request, app_label):
+        # Validate app_label to prevent potential issues
+        if not app_label or not isinstance(app_label, str) or not app_label.strip():
+            messages.error(request, "Invalid app label.")
+            return redirect("config:app_list")
+
+        app_label = app_label.strip()
         config_def = config_registry.get_config(app_label)
         if not config_def:
             messages.error(request, f"No configuration found for app: {app_label}")

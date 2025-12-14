@@ -252,9 +252,18 @@ class ConfigRegistry:
                         path=db_path,
                         defaults={"value": default_value},
                     )
-        except Exception:
+        except Exception as e:
             # Silently ignore DB errors during startup (e.g., migrations not run yet)
-            pass
+            # This is expected during initial app loading before migrations are applied
+            # Logging would be too noisy, but we catch specific exceptions to avoid
+            # masking real programming errors
+            import django.db
+
+            if not isinstance(
+                e, django.db.utils.OperationalError | django.db.utils.ProgrammingError
+            ):
+                # Re-raise non-DB errors as they indicate real bugs
+                raise
 
     def get_config(self, app_label: str) -> AppConfigDefinition | None:
         """Get the configuration definition for an app."""

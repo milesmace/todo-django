@@ -6,7 +6,8 @@ from django.core.cache import cache
 class ConfigCache:
     CACHE_KEY_PREFIX = "config:"
     # Sentinel value to distinguish between "key doesn't exist" and "value is None"
-    _NOT_FOUND = object()
+    # Made a class attribute for public access
+    NOT_FOUND = object()
 
     _instance: Self | None = None
 
@@ -15,23 +16,28 @@ class ConfigCache:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def get(self, key: str) -> Any | None:
-        """Get value from cache. Returns _NOT_FOUND if key doesn't exist."""
+    def get(self, key: str) -> Any:
+        """
+        Get value from cache.
+
+        Returns:
+            Cached value if exists, NOT_FOUND sentinel if key doesn't exist
+        """
         full_key = self.CACHE_KEY_PREFIX + key
         # Use a sentinel to distinguish between "key doesn't exist" and "value is None"
-        value = cache.get(full_key, self._NOT_FOUND)
-        if value is self._NOT_FOUND:
-            return self._NOT_FOUND
+        value = cache.get(full_key, self.NOT_FOUND)
         return value
 
     def exists(self, key: str) -> bool:
         """Check if a key exists in cache."""
-        return self.get(key) is not self._NOT_FOUND
+        return self.get(key) is not self.NOT_FOUND
 
     def set(self, key: str, value: Any) -> None:
+        """Set value in cache."""
         cache.set(self.CACHE_KEY_PREFIX + key, value)
 
     def invalidate(self, key: str) -> None:
+        """Invalidate (delete) a cache key."""
         cache.delete(self.CACHE_KEY_PREFIX + key)
 
 

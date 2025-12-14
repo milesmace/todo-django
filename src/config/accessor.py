@@ -162,7 +162,7 @@ class ConfigAccessor:
 
         # First check cache
         cached_value = config_cache.get(path)
-        if cached_value is not config_cache._NOT_FOUND:
+        if cached_value is not config_cache.NOT_FOUND:
             # Cache hit - deserialize the raw value
             return self._deserialize(field, cached_value)
 
@@ -232,8 +232,11 @@ class ConfigAccessor:
             defaults={"value": serialized},
         )
 
-        # Invalidate cache
+        # Invalidate cache after successful DB save
         config_cache.invalidate(path)
+
+        # Cache the new value immediately to avoid cache miss on next read
+        config_cache.set(path, serialized)
 
         # Call on_save callback if defined
         if field.on_save:

@@ -175,8 +175,21 @@ class BooleanFrontendModel(BaseFrontendModel):
         return bool(value)
 
     def get_value(self, raw_value: str | None) -> bool:
-        # Checkbox sends value only when checked
-        return raw_value is not None and raw_value != "" and raw_value != "false"
+        """
+        Convert raw form value to boolean.
+
+        Checkbox behavior:
+        - If checkbox is checked, browser sends a value (usually "on" or the value attribute)
+        - If checkbox is unchecked, browser doesn't send the field at all (None)
+        - We also handle explicit "false" string for API/form compatibility
+        """
+        if raw_value is None or raw_value == "":
+            return False
+        # Explicitly handle "false" string (for API/form submissions)
+        if isinstance(raw_value, str) and raw_value.lower() == "false":
+            return False
+        # Any other non-empty value means True
+        return True
 
     def serialize_value(self, value: Any) -> str:
         return "true" if value else "false"

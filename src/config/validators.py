@@ -7,7 +7,7 @@ before being saved to the database.
 
 import re
 from abc import ABC, abstractmethod
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from typing import Any
 
 
@@ -198,7 +198,7 @@ class RangeValidator(BaseValidator):
 
         try:
             num_value = Decimal(str(value))
-        except Exception:
+        except (ValueError, TypeError, InvalidOperation):
             self._fail("Must be a valid number.")
             return
 
@@ -219,7 +219,7 @@ class PositiveValidator(BaseValidator):
         try:
             if Decimal(str(value)) <= 0:
                 self._fail()
-        except Exception:
+        except (ValueError, TypeError, InvalidOperation):
             self._fail("Must be a valid number.")
 
 
@@ -234,7 +234,7 @@ class NonNegativeValidator(BaseValidator):
         try:
             if Decimal(str(value)) < 0:
                 self._fail()
-        except Exception:
+        except (ValueError, TypeError, InvalidOperation):
             self._fail("Must be a valid number.")
 
 
