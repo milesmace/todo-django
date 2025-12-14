@@ -9,7 +9,7 @@ class ConfigValueAdmin(admin.ModelAdmin):
 
     list_display = ("app_label", "path", "value_preview")
     list_filter = ("app_label",)
-    search_fields = ("app_label", "path", "value")
+    search_fields = ("app_label", "path")
     ordering = ("app_label", "path")
     readonly_fields = ("app_label", "path", "value_preview")
 
