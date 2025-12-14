@@ -26,6 +26,7 @@ Usage:
 
 from typing import Any
 
+from .cache import config_cache
 from .exceptions import (
     AppNotFoundError,
     ConfigValueError,
@@ -159,16 +160,33 @@ class ConfigAccessor:
                 return default
             raise
 
+        # First check cache
+        cached_value = config_cache.get(path)
+        if cached_value is not config_cache._NOT_FOUND:
+            # Cache hit - deserialize the raw value
+            return self._deserialize(field, cached_value)
+
+        # Cache miss - query database
         db_path = self._to_db_path(section, field_name)
+
         try:
             config_value = ConfigValue.objects.get(
                 app_label=app_label,
                 path=db_path,
             )
+            # Cache the raw database value
+            config_cache.set(path, config_value.value)
             return self._deserialize(field, config_value.value)
         except ConfigValue.DoesNotExist:
+            # No DB value - use default and cache it
             if field.default is not None:
+                # Serialize and cache the default value
+                frontend_model = field.get_frontend_model_instance()
+                serialized_default = frontend_model.serialize_value(field.default)
+                config_cache.set(path, serialized_default)
                 return field.default
+            # No default - cache None to avoid repeated DB queries
+            config_cache.set(path, None)
             return default
 
     def set(self, path: str, value: Any) -> None:
@@ -213,6 +231,9 @@ class ConfigAccessor:
             path=db_path,
             defaults={"value": serialized},
         )
+
+        # Invalidate cache
+        config_cache.invalidate(path)
 
         # Call on_save callback if defined
         if field.on_save:

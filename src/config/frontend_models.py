@@ -176,7 +176,7 @@ class BooleanFrontendModel(BaseFrontendModel):
 
     def get_value(self, raw_value: str | None) -> bool:
         # Checkbox sends value only when checked
-        return raw_value is not None and raw_value != ""
+        return raw_value is not None and raw_value != "" and raw_value != "false"
 
     def serialize_value(self, value: Any) -> str:
         return "true" if value else "false"
