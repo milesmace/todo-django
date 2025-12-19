@@ -15,6 +15,7 @@
         border-radius: 4px;
         margin-bottom: 15px;
         padding: 20px;
+        position: relative;
         transition: box-shadow 0.2s ease;
     }
     .config-app-card:hover {
@@ -30,6 +31,10 @@
     }
     .config-app-card h3 a:hover {
         color: var(--link-fg, #417690);
+    }
+    .config-app-card .config-card-link-span {
+        position: absolute;
+        inset: 0;
     }
     .config-app-meta {
         color: var(--body-quiet-color, #666);
@@ -67,6 +72,7 @@
             <h3>
                 <a href="{% url 'config:app_detail' app.app_label %}">
                     {{ app.app_label|title }}
+                    <span class="config-card-link-span" />
                 </a>
             </h3>
             <div class="config-app-meta">
