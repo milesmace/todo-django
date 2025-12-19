@@ -30,7 +30,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-  mailcatcher:
+  mail:
     image: dockage/mailcatcher:0.9.0
     ports:
       - 1081:1080
