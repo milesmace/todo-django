@@ -41,6 +41,7 @@ class TodoViewSet(viewsets.ModelViewSet):
         # Validate that the group belongs to the current user
         if group.owner != self.request.user:
             raise PermissionDenied(
-                "You can only move todos to your own groups.", status.HTTP_403_FORBIDDEN
+                "You can only move todos to your own groups.",
+                status.HTTP_403_FORBIDDEN,
             )
         serializer.save()

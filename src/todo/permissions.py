@@ -10,5 +10,4 @@ class IsAppUserGroupMember(BasePermission):
 
     def has_permission(self, request, view):
         app_user_group_name = APP_CONFIG["APP_USERS_GROUP_NAME"]
-        if request.user.groups.filter(name=app_user_group_name).exists():
-            return True
+        return request.user.groups.filter(name=app_user_group_name).exists()
