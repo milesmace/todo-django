@@ -4,7 +4,7 @@ from django.db import models
 
 class TodoGroup(models.Model):
     name = models.CharField(max_length=200)
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True, null=True)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -24,7 +24,7 @@ class TodoGroup(models.Model):
 
 class Todo(models.Model):
     title = models.CharField(max_length=200)
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
     is_completed = models.BooleanField(default=False)
     group = models.ForeignKey(TodoGroup, on_delete=models.CASCADE, related_name="todos")
 
