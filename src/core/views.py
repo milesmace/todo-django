@@ -3,9 +3,21 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from todo.views import TodoGroupViewSet, TodoViewSet
 from todoapp.settings import APP_CONFIG
 
+from .permissions import IsAppUserGroupMember
 from .serializers import UserRegistrationSerializer
+
+
+class CoreTodoGroupViewSet(TodoGroupViewSet):
+    def get_permissions(self):
+        return [IsAppUserGroupMember()] + list(super().get_permissions())
+
+
+class CoreTodoViewSet(TodoViewSet):
+    def get_permissions(self):
+        return [IsAppUserGroupMember()] + list(super().get_permissions())
 
 
 class RegisterView(APIView):
