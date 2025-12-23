@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "rest_framework",
     # Apps
     "core",
+    "db_email",
     "todo",
 ]
 
@@ -79,6 +80,14 @@ if DEBUG:
 ROOT_URLCONF = "todoapp.urls"
 
 TEMPLATES = [
+    {
+        "BACKEND": "db_email.template_backend.DBEmailTemplateEngine",
+        "DIRS": [],
+        "APP_DIRS": False,
+        "OPTIONS": {
+            "context_processors": [],
+        },
+    },
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [],
@@ -166,6 +175,12 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
 }
+
+# TODO: Move these to config app
+# Email Settings
+EMAIL_HOST = "mail"
+EMAIL_PORT = 1025
+
 
 # Django Debug Toolbar
 # https://django-debug-toolbar.readthedocs.io/en/latest/configuration.html
