@@ -3,13 +3,12 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import SearchFilter
 
 from .models import Todo, TodoGroup
-from .permissions import IsAppUserGroupMember
 from .serializers import TodoGroupSerializer, TodoSerializer
 
 
 class TodoGroupViewSet(viewsets.ModelViewSet):
     serializer_class = TodoGroupSerializer
-    permission_classes = [permissions.IsAuthenticated, IsAppUserGroupMember]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return TodoGroup.objects.filter(owner=self.request.user)
@@ -34,7 +33,7 @@ class TodoGroupViewSet(viewsets.ModelViewSet):
 
 class TodoViewSet(viewsets.ModelViewSet):
     serializer_class = TodoSerializer
-    permission_classes = [permissions.IsAuthenticated, IsAppUserGroupMember]
+    permission_classes = [permissions.IsAuthenticated]
     filter_backends = [SearchFilter]
 
     def get_queryset(self):
