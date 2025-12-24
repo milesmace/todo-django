@@ -29,6 +29,8 @@ Usage:
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
+import django.db
+
 if TYPE_CHECKING:
     from config.frontend_models import BaseFrontendModel
     from config.validators import BaseValidator
@@ -252,18 +254,13 @@ class ConfigRegistry:
                         path=db_path,
                         defaults={"value": default_value},
                     )
-        except Exception as e:
+        except (
+            django.db.utils.OperationalError,
+            django.db.utils.ProgrammingError,
+        ):
             # Silently ignore DB errors during startup (e.g., migrations not run yet)
             # This is expected during initial app loading before migrations are applied
-            # Logging would be too noisy, but we catch specific exceptions to avoid
-            # masking real programming errors
-            import django.db
-
-            if not isinstance(
-                e, django.db.utils.OperationalError | django.db.utils.ProgrammingError
-            ):
-                # Re-raise non-DB errors as they indicate real bugs
-                raise
+            pass
 
     def get_config(self, app_label: str) -> AppConfigDefinition | None:
         """Get the configuration definition for an app."""

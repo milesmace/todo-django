@@ -2,6 +2,11 @@ from django.contrib import admin
 
 from .models import ConfigValue
 
+# Constants for value preview display
+FERNET_TOKEN_PREFIX = "gAAAAA"  # All Fernet tokens start with this
+SECRET_VALUE_MIN_LENGTH = 50  # Values longer than this are likely encrypted
+PREVIEW_MAX_LENGTH = 100  # Maximum length for value preview
+
 
 @admin.register(ConfigValue)
 class ConfigValueAdmin(admin.ModelAdmin):
@@ -18,11 +23,14 @@ class ConfigValueAdmin(admin.ModelAdmin):
         if not obj.value:
             return "(empty)"
         # Mask potentially encrypted/secret values (they start with 'gAAAAA' for Fernet)
-        if obj.value.startswith("gAAAAA") or len(obj.value) > 50:
+        if (
+            obj.value.startswith(FERNET_TOKEN_PREFIX)
+            or len(obj.value) > SECRET_VALUE_MIN_LENGTH
+        ):
             return "*** (encrypted/secret value hidden) ***"
         # Truncate long values
-        if len(obj.value) > 100:
-            return obj.value[:100] + "..."
+        if len(obj.value) > PREVIEW_MAX_LENGTH:
+            return obj.value[:PREVIEW_MAX_LENGTH] + "..."
         return obj.value
 
     value_preview.short_description = "Value"

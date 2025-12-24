@@ -11,6 +11,9 @@ import hashlib
 from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
 
+# Minimum size of a Fernet token in bytes (version + timestamp + IV + ciphertext + HMAC)
+MIN_FERNET_TOKEN_SIZE = 57
+
 
 def _get_fernet() -> Fernet:
     """
@@ -76,7 +79,7 @@ def is_encrypted(value: str) -> bool:
         # Fernet tokens are base64-encoded and start with 'gAAAAA'
         # They also have a specific length pattern
         decoded = base64.urlsafe_b64decode(value.encode())
-        return len(decoded) >= 57  # Minimum Fernet token size
+        return len(decoded) >= MIN_FERNET_TOKEN_SIZE
     except (ValueError, TypeError, UnicodeDecodeError):
         # Invalid base64 or encoding issues mean it's not encrypted
         return False
