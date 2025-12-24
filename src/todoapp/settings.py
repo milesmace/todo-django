@@ -36,6 +36,9 @@ ALLOWED_HOSTS = config(
 # Application definition
 
 INSTALLED_APPS = [
+    # Config app first to override admin templates
+    "config",
+    # Django apps
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -43,7 +46,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    # Apps
+    # Project apps
     "core",
     "db_email",
     "todo",
@@ -198,4 +201,11 @@ if DEBUG:
 
 APP_CONFIG = {
     "APP_USERS_GROUP_NAME": "App Users",
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": config("REDIS_LOCATION"),
+    },
 }

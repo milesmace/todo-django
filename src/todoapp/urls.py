@@ -20,6 +20,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
+    path("console/configuration/", include("config.urls", namespace="config")),
     path("console/", admin.site.urls),
     path("api/", include("core.urls")),
 ]
