@@ -70,6 +70,10 @@ class NotEmptyValidator(BaseValidator):
     message = "This field is required."
 
     def __call__(self, value: Any) -> None:
+        # First sanitize the given value
+        if isinstance(value, (str | int | float | bool)):
+            value = str(value)
+
         if value is None:
             self._fail()
         if isinstance(value, str) and value.strip() == "":
@@ -99,12 +103,15 @@ class MinLengthValidator(BaseValidator):
     """Validates that a string has at least a minimum length."""
 
     def __init__(self, min_length: int, message: str | None = None):
+        if min_length <= 0:
+            raise ValidationError("`min_length` cannot be 0 or less")
+
         self.min_length = min_length
         super().__init__(message or f"Must be at least {min_length} characters.")
 
     def __call__(self, value: Any) -> None:
         if value is None:
-            return
+            self._fail("This field is required.")
         if isinstance(value, str) and len(value) < self.min_length:
             self._fail()
 
@@ -113,12 +120,15 @@ class MaxLengthValidator(BaseValidator):
     """Validates that a string does not exceed a maximum length."""
 
     def __init__(self, max_length: int, message: str | None = None):
+        if max_length <= 0:
+            raise ValidationError("`max_length` cannot be 0 or less")
+
         self.max_length = max_length
         super().__init__(message or f"Must be at most {max_length} characters.")
 
     def __call__(self, value: Any) -> None:
         if value is None:
-            return
+            self._fail("This field is required.")
         if isinstance(value, str) and len(value) > self.max_length:
             self._fail()
 
@@ -146,8 +156,9 @@ class RegexValidator(BaseValidator):
 
     def __call__(self, value: Any) -> None:
         if value is None:
-            return
+            self._fail("This field is required.")
         if not isinstance(value, str):
+            self._fail("Value must be a string.")
             return
 
         matches = self.pattern.search(value) is not None
@@ -194,7 +205,7 @@ class RangeValidator(BaseValidator):
 
     def __call__(self, value: Any) -> None:
         if value is None:
-            return
+            self._fail("This field is required.")
 
         try:
             num_value = Decimal(str(value))
@@ -215,7 +226,7 @@ class PositiveValidator(BaseValidator):
 
     def __call__(self, value: Any) -> None:
         if value is None:
-            return
+            self._fail("This field is required.")
         try:
             if Decimal(str(value)) <= 0:
                 self._fail()
@@ -230,7 +241,7 @@ class NonNegativeValidator(BaseValidator):
 
     def __call__(self, value: Any) -> None:
         if value is None:
-            return
+            self._fail("This field is required.")
         try:
             if Decimal(str(value)) < 0:
                 self._fail()
@@ -255,8 +266,10 @@ class EmailValidator(BaseValidator):
     )
 
     def __call__(self, value: Any) -> None:
-        if value is None or value == "":
-            return
+        if value is None:
+            self._fail("This field is required.")
+        if value == "":
+            self._fail("This field cannot be empty.")
         if not isinstance(value, str):
             self._fail()
             return
@@ -290,8 +303,10 @@ class UrlValidator(BaseValidator):
         super().__init__(message)
 
     def __call__(self, value: Any) -> None:
-        if value is None or value == "":
-            return
+        if value is None:
+            self._fail("This field is required.")
+        if value == "":
+            self._fail("This field cannot be empty.")
         if not isinstance(value, str):
             self._fail()
             return
@@ -315,8 +330,10 @@ class IPv4Validator(BaseValidator):
     )
 
     def __call__(self, value: Any) -> None:
-        if value is None or value == "":
-            return
+        if value is None:
+            self._fail("This field is required.")
+        if value == "":
+            self._fail("This field cannot be empty.")
         if not isinstance(value, str):
             self._fail()
             return
@@ -330,8 +347,10 @@ class IPv6Validator(BaseValidator):
     message = "Enter a valid IPv6 address."
 
     def __call__(self, value: Any) -> None:
-        if value is None or value == "":
-            return
+        if value is None:
+            self._fail("This field is required.")
+        if value == "":
+            self._fail("This field cannot be empty.")
         if not isinstance(value, str):
             self._fail()
             return
@@ -360,8 +379,10 @@ class IPAddressValidator(BaseValidator):
         super().__init__(message)
 
     def __call__(self, value: Any) -> None:
-        if value is None or value == "":
-            return
+        if value is None:
+            self._fail("This field is required.")
+        if value == "":
+            self._fail("This field cannot be empty.")
         if not isinstance(value, str):
             self._fail()
             return
@@ -385,17 +406,26 @@ class HostnameValidator(BaseValidator):
 
     # RFC 1123 compliant hostname pattern
     HOSTNAME_PATTERN = re.compile(
-        r"^(?=.{1,253}$)"  # Max total length
-        r"(?!-)"  # Cannot start with hyphen
-        r"[a-zA-Z0-9-]{1,63}"  # First label
-        r"(?:\.[a-zA-Z0-9-]{1,63})*"  # Additional labels
-        r"(?<!-)$",  # Cannot end with hyphen
-        re.IGNORECASE,
+        r"^"  # Start of string
+        r"(?=.{1,253}$)"  # Total length of hostname must be 1–253 characters
+        r"(?:"
+        r"[a-zA-Z0-9]"  # Label must start with a letter or digit
+        r"(?:[a-zA-Z0-9-]{0,61}"  # Optional middle characters (letters, digits, hyphens)
+        r"[a-zA-Z0-9])?"  # Label must end with a letter or digit if longer than 1 char
+        r"\."  # Dot separator for labels
+        r")*"  # Repeat for all intermediate labels (zero or more)
+        r"[a-zA-Z0-9]"  # Last label must start with a letter or digit
+        r"(?:[a-zA-Z0-9-]{0,61}"  # Optional middle characters for last label
+        r"[a-zA-Z0-9])?"  # Last label must end with a letter or digit if longer than 1 char
+        r"$",  # End of string
+        re.IGNORECASE,  # Case-insensitive
     )
 
     def __call__(self, value: Any) -> None:
-        if value is None or value == "":
-            return
+        if value is None:
+            self._fail("This field is required.")
+        if value == "":
+            self._fail("This field cannot be empty.")
         if not isinstance(value, str):
             self._fail()
             return
@@ -424,7 +454,7 @@ class ChoiceValidator(BaseValidator):
 
     def __call__(self, value: Any) -> None:
         if value is None:
-            return
+            self._fail()
         if value not in self.choices:
             self._fail()
 
@@ -442,8 +472,10 @@ class SlugValidator(BaseValidator):
     SLUG_PATTERN = re.compile(r"^[-a-zA-Z0-9_]+$")
 
     def __call__(self, value: Any) -> None:
-        if value is None or value == "":
-            return
+        if value is None:
+            self._fail("This field is required.")
+        if value == "":
+            self._fail("This field cannot be empty.")
         if not isinstance(value, str):
             self._fail()
             return
@@ -457,8 +489,10 @@ class JsonValidator(BaseValidator):
     message = "Enter valid JSON."
 
     def __call__(self, value: Any) -> None:
-        if value is None or value == "":
-            return
+        if value is None:
+            self._fail("This field is required.")
+        if value == "":
+            self._fail("This field cannot be empty.")
         if not isinstance(value, str):
             return  # Already parsed
 
@@ -485,8 +519,10 @@ class PathValidator(BaseValidator):
         super().__init__(message)
 
     def __call__(self, value: Any) -> None:
-        if value is None or value == "":
-            return
+        if value is None:
+            self._fail("This field is required.")
+        if value == "":
+            self._fail("This field cannot be empty.")
         if not isinstance(value, str):
             self._fail()
             return
@@ -509,8 +545,10 @@ class PortValidator(BaseValidator):
     message = "Enter a valid port number (1-65535)."
 
     def __call__(self, value: Any) -> None:
-        if value is None or value == "":
-            return
+        if value is None:
+            self._fail("This field is required.")
+        if value == "":
+            self._fail("This field cannot be empty.")
 
         try:
             port = int(value)
@@ -531,8 +569,10 @@ class DomainValidator(BaseValidator):
     )
 
     def __call__(self, value: Any) -> None:
-        if value is None or value == "":
-            return
+        if value is None:
+            self._fail("This field is required.")
+        if value == "":
+            self._fail("This field cannot be empty.")
         if not isinstance(value, str):
             self._fail()
             return

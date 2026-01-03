@@ -137,6 +137,13 @@ class ConfigAppDetailView(View):
                 # Get and process value
                 processed_value = self._get_processed_value(request, field, input_name)
 
+                # Skip validation for optional fields when value is None/empty
+                # Required fields should still validate None/empty (and fail)
+                if not field.required and (
+                    processed_value is None or processed_value == ""
+                ):
+                    continue
+
                 # Run all validators for this field
                 field_label = field.label or field_name
                 errors = validate_value(processed_value, field.validators, field_label)
