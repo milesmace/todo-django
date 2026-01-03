@@ -18,7 +18,9 @@ pipeline {
 
         stage('Load env file') {
             steps {
-                withCredentials([file(credentialsId: 'todo-django-env', variable: 'TEST_ENV_FILE')]) {
+                withCredentials([
+                    file(credentialsId: 'todo-django-env', variable: 'TEST_ENV_FILE')
+                ]) {
                     sh 'cp $TEST_ENV_FILE .env'
                 }
             }
