@@ -8,6 +8,6 @@ class IsAppUserGroupMember(BasePermission):
     Assumes the model instance has a 'group' attribute with a 'members' ManyToMany field.
     """
 
-    def has_permission(self, request, view):
+    def has_permission(self, request, _view):
         app_user_group_name = APP_CONFIG["APP_USERS_GROUP_NAME"]
         return request.user.groups.filter(name=app_user_group_name).exists()
