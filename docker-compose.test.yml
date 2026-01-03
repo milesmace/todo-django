@@ -1,0 +1,21 @@
+services:
+  web:
+    build: .
+    command: sh -c "python src/manage.py test"
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  static_volume:
+  redis-data:
