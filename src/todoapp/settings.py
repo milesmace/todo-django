@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     # Project apps
     "core",
     "db_email",
+    "email_log",
     "todo",
 ]
 
@@ -179,8 +180,9 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 20,
 }
 
-# TODO: Move these to config app
-# Email Settings
+EMAIL_BACKEND = "email_log.email.EmailLogBackend"
+
+EMAIL_ACTUAL_BACKEND = "core.email_backend.ConfigurableEmailBackend"
 EMAIL_HOST = "mail"
 EMAIL_PORT = 1025
 
@@ -209,3 +211,11 @@ CACHES = {
         "LOCATION": config("REDIS_LOCATION"),
     },
 }
+
+# Celery Configuration
+# https://docs.celeryq.dev/en/stable/django/first-steps-with-django.html
+CELERY_BROKER_URL = config("REDIS_LOCATION")
+CELERY_RESULT_BACKEND = config("REDIS_LOCATION")
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
