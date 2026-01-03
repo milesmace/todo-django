@@ -21,7 +21,10 @@ pipeline {
                 withCredentials([
                     file(credentialsId: 'todo-django-env', variable: 'TEST_ENV_FILE')
                 ]) {
-                    sh 'cp $TEST_ENV_FILE .env'
+                    sh '''
+                    cp $TEST_ENV_FILE .env
+                    cat .env
+                    '''
                 }
             }
         }
