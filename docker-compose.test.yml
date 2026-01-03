@@ -1,7 +1,8 @@
 services:
   web:
     build: .
-    command: sh -c "python src/manage.py test"
+    command: sh -c "python manage.py test"
+    working_dir: /app/src
     volumes:
       - .:/app
       - static_volume:/app/staticfiles
