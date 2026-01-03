@@ -1,6 +1,9 @@
 pipeline {
     agent {
-        docker { image 'docker:27-cli' }
+        docker {
+            image 'docker:27-cli'
+            args '-v /var/run/docker.sock:/var/run/docker.sock -e HOME=/tmp'
+        }
     }
 
     stages {
