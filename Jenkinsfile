@@ -6,7 +6,17 @@ pipeline {
         }
     }
 
+    environment {
+        DISCORD_WEBHOOK_URL = credentials('todo-discord-webhook')
+    }
+
     stages {
+        stage('Setup Container') {
+            steps {
+                sh 'apk add --no-cache curl'
+            }
+        }
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -26,6 +36,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 sh 'docker compose -f docker-compose.yml -f docker-compose.test.yml run --rm web'
+                sh 'curl -X POST -H "Content-Type: application/json" -d \'{"content": "Tests passed"}\' $DISCORD_WEBHOOK_URL'
             }
         }
 
