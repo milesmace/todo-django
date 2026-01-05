@@ -84,7 +84,7 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                sh 'docker compose -f docker-compose.yml -f docker-compose.test.yml run --rm web'
+                sh 'docker compose -f docker-compose.yml -f docker-compose.test.yml run --rm --build web'
             }
         }
 
