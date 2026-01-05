@@ -1,0 +1,11 @@
+services:
+  redisinsight:
+    image: redis/redisinsight
+    ports:
+      - "5540:5540"
+    restart: unless-stopped
+
+  mail:
+    image: dockage/mailcatcher:0.9.0
+    ports:
+      - 1081:1080
