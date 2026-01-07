@@ -26,3 +26,14 @@ repos:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
         exclude: migrations/
+
+  # Local hook for running tests on push
+  - repo: local
+    hooks:
+      - id: django-tests
+        name: Run Django tests
+        entry: sh -c "cd src && python manage.py test --no-input"
+        language: system
+        stages: [push]
+        pass_filenames: false
+        always_run: true
