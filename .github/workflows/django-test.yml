@@ -1,0 +1,52 @@
+name: Django Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create .env file
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          REDIS_LOCATION: ${{ secrets.REDIS_LOCATION }}
+        run: |
+          cat > .env << EOF
+          SECRET_KEY=${SECRET_KEY:-longbutinsecurekeyforgithubactionswhiletestingtheapp}
+          DEBUG=False
+          ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
+          DB_NAME=${DB_NAME:-testdb}
+          DB_USER=${DB_USER:-testuser}
+          DB_PASSWORD=${DB_PASSWORD:-testpass}
+          DB_HOST=db
+          DB_PORT=5432
+          POSTGRES_DB=${POSTGRES_DB:-${DB_NAME:-testdb}}
+          POSTGRES_USER=${POSTGRES_USER:-${DB_USER:-testuser}}
+          POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-${DB_PASSWORD:-testpass}}
+          REDIS_LOCATION=${REDIS_LOCATION:-redis://cache:6379/0}
+          EOF
+
+      - name: Run tests
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.test.yml run --rm --build web
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.test.yml down -v
