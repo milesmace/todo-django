@@ -53,6 +53,9 @@ INSTALLED_APPS = [
     "todo",
 ]
 
+# Custom User Model
+AUTH_USER_MODEL = "core.User"
+
 # Add debug toolbar only in DEBUG mode
 if DEBUG:
     try:
