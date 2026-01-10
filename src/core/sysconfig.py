@@ -11,18 +11,32 @@ from config.frontend_models import (
     StringFrontendModel,
 )
 from config.registry import Field, Section, register_config
-from config.validators import PortValidator, Required
+from config.validators import PortValidator, Required, UrlValidator
 
 
 @register_config("core")
 class CoreSysConfig:
     """Configuration definition for the Core app."""
 
+    class App(Section):
+        """Todo App Configuration."""
+
+        label: str = "App Configuration"
+        sort_order: int = 10
+
+        react_app_url: Field = Field(
+            StringFrontendModel,
+            label="React App URL",
+            placeholder="https://example.com",
+            sort_order=10,
+            validators=[Required(), UrlValidator()],
+        )
+
     class Email(Section):
         """Email settings."""
 
-        label = "Email Settings"
-        sort_order = 10
+        label: str = "Email Settings"
+        sort_order: int = 20
 
         email_host = Field(
             StringFrontendModel,
