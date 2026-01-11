@@ -75,8 +75,8 @@ class CoreSysConfig:
         email_use_tls = Field(
             BooleanFrontendModel,
             label="Use TLS",
-            comment="Whether to use TLS (STARTTLS) for the connection. Typically used with port 587.",
-            default=True,
+            comment="Whether to use TLS (STARTTLS) for the connection. Typically used with port 587. Set to False for development mail servers like MailCatcher.",
+            default=False,
             sort_order=25,
         )
 

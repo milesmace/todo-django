@@ -211,17 +211,21 @@ APP_CONFIG = {
     "APP_USERS_GROUP_NAME": "App Users",
 }
 
+# Redis Configuration
+# Base Redis URL (e.g., redis://cache:6379)
+REDIS_BASE_URL = config("REDIS_LOCATION").rstrip("/")
+
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": config("REDIS_LOCATION"),
+        "LOCATION": f"{REDIS_BASE_URL}/0",  # Database 0 for cache
     },
 }
 
 # Celery Configuration
 # https://docs.celeryq.dev/en/stable/django/first-steps-with-django.html
-CELERY_BROKER_URL = config("REDIS_LOCATION")
-CELERY_RESULT_BACKEND = config("REDIS_LOCATION")
+CELERY_BROKER_URL = f"{REDIS_BASE_URL}/1"  # Database 1 for Celery
+CELERY_RESULT_BACKEND = f"{REDIS_BASE_URL}/1"
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"

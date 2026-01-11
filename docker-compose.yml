@@ -39,6 +39,18 @@ services:
         condition: service_healthy
       cache:
         condition: service_started
+  celery:
+    build: .
+    command: sh -c "cd /app/src && celery -A todoapp worker --loglevel=info"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_started
 
 
 volumes:
