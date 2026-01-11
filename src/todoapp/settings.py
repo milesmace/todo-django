@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 
+from core.template_utils import discover_template_tag_libraries
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -93,6 +94,8 @@ TEMPLATES = [
         "APP_DIRS": False,
         "OPTIONS": {
             "context_processors": [],
+            # Enable automatic discovery of template tag libraries from installed apps
+            "library_discovery_function": discover_template_tag_libraries,
         },
     },
     {

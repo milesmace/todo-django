@@ -1,20 +1,55 @@
-from django.template import Context
-from django.template import Template as DjangoTemplate
+from django.template.context import make_context
+from django.template.exceptions import TemplateDoesNotExist
 
 
 class DBEmailTemplate:
-    def __init__(self, source, engine, metadata=None):
-        self.source = source
-        self.engine = engine
+    """
+    A template wrapper that uses the custom database template engine.
+
+    This class wraps a Django Template object created by our custom engine,
+    ensuring that {% extends %} and {% include %} tags use the database loader.
+    """
+
+    def __init__(self, template, backend, metadata=None):
+        """
+        Initialize the template wrapper.
+
+        Args:
+            template: The Django Template object created by the engine
+            backend: The DBEmailTemplateEngine instance
+            metadata: Optional metadata dictionary
+        """
+        self.template = template
+        self.backend = backend
         self.metadata = metadata or {}
 
-        # Use Django's built-in template engine to render
-        self._template = DjangoTemplate(source)
+    @property
+    def origin(self):
+        """Return the template origin for debugging."""
+        return self.template.origin
 
     def render(self, context=None, request=None):
-        context = context or {}
+        """
+        Render the template with the given context.
 
-        if not isinstance(context, Context):
-            context = Context(context)
+        Args:
+            context: A dict or Context object
+            request: Optional request object
 
-        return self._template.render(context)
+        Returns:
+            str: The rendered template
+        """
+        # Use make_context to properly handle context creation
+        # This ensures compatibility with Django's context processors
+        context = make_context(
+            context,
+            request,
+            autoescape=self.backend.engine.autoescape,
+        )
+
+        try:
+            return self.template.render(context)
+        except TemplateDoesNotExist as exc:
+            # Re-raise with backend information
+            exc.backend = self.backend
+            raise
