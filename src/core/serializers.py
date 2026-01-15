@@ -24,3 +24,38 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             timezone=validated_data.get("timezone", "UTC"),
         )
         return user
+
+
+class VerifyEmailSerializer(serializers.Serializer):
+    """Serializer for email verification."""
+
+    token = serializers.CharField(required=True, help_text="Email verification token")
+
+
+class ResendVerificationEmailSerializer(serializers.Serializer):
+    """Serializer for resending verification email."""
+
+    email = serializers.EmailField(
+        required=True, help_text="Email address to resend verification to"
+    )
+
+    def validate_email(self, value):
+        try:
+            user = User.objects.get(email=value)
+        except User.DoesNotExist:
+            # Don't reveal if email exists or not for security
+            return value
+
+        # Check if already verified
+        security = user.get_security_metadata()
+        if security.get("email_verified"):
+            raise serializers.ValidationError("Email is already verified.")
+
+        return value
+
+
+class UserSecuritySerializer(serializers.Serializer):
+    """Serializer for user security metadata."""
+
+    email_verified = serializers.BooleanField(read_only=True)
+    email_verified_at = serializers.DateTimeField(read_only=True, allow_null=True)

@@ -11,7 +11,7 @@ from config.frontend_models import (
     StringFrontendModel,
 )
 from config.registry import Field, Section, register_config
-from config.validators import PortValidator, Required, UrlValidator
+from config.validators import PortValidator, RangeValidator, Required, UrlValidator
 
 
 @register_config("core")
@@ -32,11 +32,35 @@ class CoreSysConfig:
             validators=[Required(), UrlValidator()],
         )
 
+    class Auth(Section):
+        """Authentication settings."""
+
+        label: str = "Authentication Settings"
+        sort_order: int = 20
+
+        verification_token_expiry = Field(
+            IntegerFrontendModel,
+            label="Verification Token Expiry (seconds)",
+            comment="How long email verification tokens remain valid. Provide a value between 300 and 604800 seconds (5 minutes and 1 week).",
+            default=86_400,  # 24 hours
+            sort_order=10,
+            validators=[RangeValidator(300, 604800)],
+        )
+
+        password_reset_token_expiry = Field(
+            IntegerFrontendModel,
+            label="Password Reset Token Expiry (seconds)",
+            comment="How long password reset tokens remain valid. Provide a value between 60 and 86400 seconds (1 minute and 1 day).",
+            default=600,  # 10 minutes
+            sort_order=15,
+            validators=[RangeValidator(60, 86400)],
+        )
+
     class Email(Section):
         """Email settings."""
 
         label: str = "Email Settings"
-        sort_order: int = 20
+        sort_order: int = 30
 
         email_host = Field(
             StringFrontendModel,

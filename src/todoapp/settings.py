@@ -90,6 +90,7 @@ ROOT_URLCONF = "todoapp.urls"
 TEMPLATES = [
     {
         "BACKEND": "db_email.template_backend.DBEmailTemplateEngine",
+        "NAME": "db_email",
         "DIRS": [],
         "APP_DIRS": False,
         "OPTIONS": {
@@ -184,6 +185,16 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
+    # Throttling for rate limiting
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/hour",
+        "resend_verification": "3/hour",
+        "password_reset": "3/hour",
+    },
 }
 
 EMAIL_BACKEND = "email_log.email.EmailLogBackend"
@@ -206,6 +217,9 @@ if DEBUG:
 
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
     INTERNAL_IPS += [ip[:-1] + "1" for ip in ips]
+
+    REST_FRAMEWORK["DEFAULT_THROTTLE_CLASSES"] = []
+    REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {}
 
 APP_CONFIG = {
     "APP_USERS_GROUP_NAME": "App Users",

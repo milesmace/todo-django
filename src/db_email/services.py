@@ -7,6 +7,8 @@ email templates stored in the database.
 
 from dataclasses import dataclass
 
+from django.template import engines
+
 from .models import EmailTemplate, EmailTemplateVersion
 
 
@@ -42,7 +44,7 @@ class TemplateService:
     """
 
     @classmethod
-    def get_template(cls, identifier: str) -> TemplateContent:
+    def get_template(cls, identifier: str, context: dict = None) -> TemplateContent:
         """
         Fetch the subject and body from the active version of a template.
 
@@ -58,13 +60,6 @@ class TemplateService:
         Raises:
             TemplateNotFoundError: If no template exists with the given identifier
             ActiveTemplateVersionNotFoundError: If the template has no active version
-
-        Example:
-            >>> content = get_active_template_content("welcome_email")
-            >>> print(content.subject)
-            "Welcome to our platform!"
-            >>> print(content.body)
-            "Dear {{ user.name }}, ..."
         """
 
         try:
@@ -84,7 +79,14 @@ class TemplateService:
                 f"No active version found for template '{identifier}'"
             )
 
+        template = engines["db_email"].from_string(active_version.body)
+
+        if context and len(context) > 0:
+            body = template.render(context)
+        else:
+            body = template.render()
+
         return TemplateContent(
             subject=active_version.subject,
-            body=active_version.body,
+            body=body,
         )

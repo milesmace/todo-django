@@ -5,7 +5,7 @@ Each recipient gets their own task, allowing granular tracking and independent r
 """
 
 from celery import shared_task
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMultiAlternatives
 from django.utils import timezone
 
 
@@ -47,7 +47,7 @@ def send_email_to_recipient(self, email_log_id: int) -> dict:
 
     try:
         # Create the email message for this single recipient
-        email = EmailMessage(
+        email = EmailMultiAlternatives(
             subject=message.subject,
             body=message.body,
             from_email=message.from_email,
@@ -55,6 +55,7 @@ def send_email_to_recipient(self, email_log_id: int) -> dict:
             cc=[email_log.to_email] if email_log.recipient_type == "cc" else [],
             bcc=[email_log.to_email] if email_log.recipient_type == "bcc" else [],
         )
+        email.attach_alternative(message.body, "text/html")
 
         # Send using the actual SMTP backend (not EmailLogBackend to avoid recursion)
         email.connection = _get_smtp_connection()
