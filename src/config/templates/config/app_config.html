@@ -318,8 +318,7 @@
     {% if sections %}
     <div class="config-submit">
         <div class="config-actions-left">
-            <button type="button" class="config-btn-secondary" onclick="expandAll()">Expand All</button>
-            <button type="button" class="config-btn-secondary" onclick="collapseAll()">Collapse All</button>
+            <button type="button" class="config-btn-secondary" id="toggleAllBtn" onclick="toggleAll()">Collapse All</button>
         </div>
         <input type="submit" value="Save Changes" id="submitBtn">
     </div>
@@ -397,14 +396,24 @@ function toggleSection(header) {
     });
 })();
 
-// Expand/Collapse All
-function expandAll() {
-    // Remove collapsed class from DOM
+// Expand/Collapse All Toggle
+function toggleAll() {
+    const btn = document.getElementById('toggleAllBtn');
+    const isExpand = btn.dataset.action === 'expand';
+
+    if (isExpand) {
+        expandAllInternal();
+    } else {
+        collapseAllInternal();
+    }
+    updateToggleButton();
+}
+
+function expandAllInternal() {
     document.querySelectorAll('.config-section').forEach(section => {
         section.classList.remove('collapsed');
     });
 
-    // Update state to remove all keys for this app
     const state = getCollapsedState();
     document.querySelectorAll('.config-section').forEach(section => {
         const sectionName = section.dataset.section;
@@ -414,13 +423,11 @@ function expandAll() {
     saveCollapsedState(state);
 }
 
-function collapseAll() {
-    // Add collapsed class to DOM
+function collapseAllInternal() {
     document.querySelectorAll('.config-section').forEach(section => {
         section.classList.add('collapsed');
     });
 
-    // Update state to add all keys for this app
     const state = getCollapsedState();
     document.querySelectorAll('.config-section').forEach(section => {
         const sectionName = section.dataset.section;
@@ -429,6 +436,27 @@ function collapseAll() {
     });
     saveCollapsedState(state);
 }
+
+function updateToggleButton() {
+    const btn = document.getElementById('toggleAllBtn');
+    if (!btn) return;
+
+    const allSections = document.querySelectorAll('.config-section');
+    const collapsedSections = document.querySelectorAll('.config-section.collapsed');
+
+    // If all sections are collapsed, next action should be Expand
+    if (allSections.length > 0 && collapsedSections.length === allSections.length) {
+        btn.innerText = "Expand All";
+        btn.dataset.action = "expand";
+    } else {
+        btn.innerText = "Collapse All";
+        btn.dataset.action = "collapse";
+    }
+}
+
+// Initial check
+document.addEventListener('DOMContentLoaded', updateToggleButton);
+
 
 // Track changed fields for optimized saving
 (function() {
