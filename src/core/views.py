@@ -6,6 +6,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from todo.models import Todo, TodoGroup
 from todo.views import TodoGroupViewSet, TodoViewSet
 from todoapp.settings import APP_CONFIG
 
@@ -58,6 +59,26 @@ class RegisterView(APIView):
             user.groups.add(group)
 
             UserAuthService.request_email_verification(user.email)
+
+            # Create default todo group for the user
+            todo_group = TodoGroup.objects.create(
+                name="Work 💼",
+                owner=user,
+            )
+
+            # Create 3 sample todos for that todo group
+            Todo.objects.create(
+                title="Plan the next weeks schedule",
+                group=todo_group,
+            )
+            Todo.objects.create(
+                title="Connect with client regarding project",
+                group=todo_group,
+            )
+            Todo.objects.create(
+                title="Email the report of work log to the client",
+                group=todo_group,
+            )
 
             return Response(
                 {
