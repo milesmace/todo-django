@@ -213,6 +213,7 @@
         border-radius: 4px;
         display: flex;
         justify-content: flex-end;
+        align-items: center;
         gap: 10px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
@@ -263,6 +264,40 @@
             text-align: left;
         }
     }
+
+    /* Actions styling */
+    .config-actions-left {
+        display: flex;
+        gap: 10px;
+    }
+    .config-btn-secondary {
+        background: var(--body-bg, #fff);
+        color: var(--body-fg, #333);
+        border: 1px solid var(--hairline-color, #ccc);
+        padding: 10px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    .config-btn-secondary:hover {
+        background: var(--darkened-bg, #f0f0f0);
+        border-color: var(--hairline-color, #bbb);
+    }
+    @media (max-width: 500px) {
+        .config-submit {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .config-actions-left {
+            justify-content: space-between;
+        }
+        .config-btn-secondary {
+            flex: 1;
+            text-align: center;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -282,6 +317,10 @@
 
     {% if sections %}
     <div class="config-submit">
+        <div class="config-actions-left">
+            <button type="button" class="config-btn-secondary" onclick="expandAll()">Expand All</button>
+            <button type="button" class="config-btn-secondary" onclick="collapseAll()">Collapse All</button>
+        </div>
         <input type="submit" value="Save Changes" id="submitBtn">
     </div>
     {% endif %}
@@ -357,6 +396,39 @@ function toggleSection(header) {
         }
     });
 })();
+
+// Expand/Collapse All
+function expandAll() {
+    // Remove collapsed class from DOM
+    document.querySelectorAll('.config-section').forEach(section => {
+        section.classList.remove('collapsed');
+    });
+
+    // Update state to remove all keys for this app
+    const state = getCollapsedState();
+    document.querySelectorAll('.config-section').forEach(section => {
+        const sectionName = section.dataset.section;
+        const sectionId = `${APP_LABEL}.${sectionName}`;
+        delete state[sectionId];
+    });
+    saveCollapsedState(state);
+}
+
+function collapseAll() {
+    // Add collapsed class to DOM
+    document.querySelectorAll('.config-section').forEach(section => {
+        section.classList.add('collapsed');
+    });
+
+    // Update state to add all keys for this app
+    const state = getCollapsedState();
+    document.querySelectorAll('.config-section').forEach(section => {
+        const sectionName = section.dataset.section;
+        const sectionId = `${APP_LABEL}.${sectionName}`;
+        state[sectionId] = true;
+    });
+    saveCollapsedState(state);
+}
 
 // Track changed fields for optimized saving
 (function() {
