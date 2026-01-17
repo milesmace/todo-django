@@ -9,6 +9,7 @@ from config.frontend_models import (
     IntegerFrontendModel,
     SecretFrontendModel,
     StringFrontendModel,
+    TextareaFrontendModel,
 )
 from config.registry import Field, Section, register_config
 from config.validators import PortValidator, RangeValidator, Required, UrlValidator
@@ -29,7 +30,30 @@ class CoreSysConfig:
             label="React App URL",
             placeholder="https://example.com",
             sort_order=10,
-            validators=[Required(), UrlValidator()],
+            validators=[Required(), UrlValidator(schemes=["https"])],
+        )
+
+    class Cors(Section):
+        """CORS settings for frontend applications."""
+
+        label: str = "CORS Settings"
+        sort_order: int = 15
+
+        allowed_origins = Field(
+            TextareaFrontendModel,
+            label="Allowed Origins",
+            comment="Comma-separated list of allowed origins for CORS requests. Example: http://localhost:3000, https://app.example.com",
+            default="http://localhost:3000",
+            placeholder="http://localhost:3000, https://app.example.com",
+            sort_order=10,
+        )
+
+        allow_credentials = Field(
+            BooleanFrontendModel,
+            label="Allow Credentials",
+            comment="Allow cookies and authorization headers in cross-origin requests.",
+            default=True,
+            sort_order=20,
         )
 
     class Auth(Section):

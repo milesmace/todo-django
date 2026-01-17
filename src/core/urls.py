@@ -6,11 +6,14 @@ from rest_framework_simplejwt.views import (
 )
 
 from .views import (
+    ChangePasswordView,
     CoreTodoGroupViewSet,
     CoreTodoViewSet,
     RegisterView,
     RequestResetPasswordView,
     ResendVerificationEmailView,
+    ResetPasswordView,
+    UserProfileView,
     VerifyEmailView,
 )
 
@@ -23,6 +26,8 @@ urlpatterns = [
     path("auth/login/", TokenObtainPairView.as_view(), name="login"),
     path("auth/login/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("auth/register/", RegisterView.as_view(), name="register"),
+    # User profile
+    path("auth/me/", UserProfileView.as_view(), name="user_profile"),
     # Email verification
     path("auth/verify-email/", VerifyEmailView.as_view(), name="verify_email"),
     path(
@@ -30,11 +35,21 @@ urlpatterns = [
         ResendVerificationEmailView.as_view(),
         name="resend_verification",
     ),
-    # Password reset
+    # Password management
     path(
         "auth/forgot-password/",
         RequestResetPasswordView.as_view(),
         name="request_reset_password",
+    ),
+    path(
+        "auth/reset-password/",
+        ResetPasswordView.as_view(),
+        name="reset_password",
+    ),
+    path(
+        "auth/change-password/",
+        ChangePasswordView.as_view(),
+        name="change_password",
     ),
     # API routes
     path("", include(router.urls)),

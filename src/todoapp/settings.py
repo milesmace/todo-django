@@ -47,6 +47,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Third-party apps
+    "corsheaders",
+    "django_filters",
     "rest_framework",
     # Project apps
     "core",
@@ -70,6 +73,7 @@ if DEBUG:
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -185,6 +189,11 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
     # Throttling for rate limiting
@@ -250,3 +259,25 @@ CELERY_RESULT_BACKEND = f"{REDIS_BASE_URL}/1"
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
+
+# CORS Configuration
+# https://github.com/adamchainz/django-cors-headers
+#
+# CORS is configured dynamically using the check_request_enabled signal.
+# Allowed origins are managed through the admin configuration panel
+# at: /console/configuration/core/
+#
+# The signal handler is in core/cors.py and reads from:
+# - core.cors.allowed_origins (comma-separated list of origins)
+# - core.cors.allow_credentials (boolean)
+
+# Empty list - origins are checked dynamically via signal
+CORS_ALLOWED_ORIGINS = []
+
+# Allow credentials (cookies, authorization headers)
+# This is also configurable via admin, but we set a sensible default
+CORS_ALLOW_CREDENTIALS = True
+
+# In DEBUG mode, allow all origins for easier development
+# In production, the signal handler validates against configured origins
+CORS_ALLOW_ALL_ORIGINS = not DEBUG

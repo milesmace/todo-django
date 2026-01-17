@@ -7,3 +7,5 @@ python-decouple>=3.8
 djangorestframework>=3.14.0
 cryptography>=41.0.0
 djangorestframework_simplejwt>=5.5.0
+django-cors-headers>=4.3.0
+django-filter>=24.0

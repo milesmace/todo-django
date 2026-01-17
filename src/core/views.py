@@ -12,7 +12,10 @@ from todoapp.settings import APP_CONFIG
 
 from .permissions import IsAppUserGroupMember
 from .serializers import (
+    ChangePasswordSerializer,
     ResendVerificationEmailSerializer,
+    ResetPasswordSerializer,
+    UserProfileSerializer,
     UserRegistrationSerializer,
     VerifyEmailSerializer,
 )
@@ -252,3 +255,122 @@ class RequestResetPasswordView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class ResetPasswordView(APIView):
+    """
+    Reset password using a token from the password reset email.
+
+    Completes the forgot-password flow by setting a new password.
+    """
+
+    permission_classes = [AllowAny]
+
+    def post(self, request: Request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        token = serializer.validated_data["token"]
+        new_password = serializer.validated_data["new_password"]
+
+        try:
+            user = TokenService.verify_password_reset_token(token)
+        except TokenExpiredError:
+            return Response(
+                {
+                    "error": "Token expired",
+                    "message": "The password reset link has expired. Please request a new one.",
+                    "code": "token_expired",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except TokenInvalidError:
+            return Response(
+                {
+                    "error": "Invalid token",
+                    "message": "The password reset link is invalid.",
+                    "code": "token_invalid",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Set the new password
+        user.set_password(new_password)
+        user.save()
+
+        # Update security metadata
+        user.set_security_metadata(password_changed_at=timezone.now().isoformat())
+
+        return Response(
+            {
+                "message": "Password reset successfully. You can now login with your new password.",
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class ChangePasswordView(APIView):
+    """
+    Change password for authenticated users.
+
+    Requires the current password for verification.
+    """
+
+    def post(self, request: Request):
+        serializer = ChangePasswordSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        current_password = serializer.validated_data["current_password"]
+        new_password = serializer.validated_data["new_password"]
+
+        user = request.user
+
+        # Verify current password
+        if not user.check_password(current_password):
+            return Response(
+                {
+                    "error": "Invalid password",
+                    "message": "Current password is incorrect.",
+                    "code": "invalid_password",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Set the new password
+        user.set_password(new_password)
+        user.save()
+
+        # Update security metadata
+        user.set_security_metadata(password_changed_at=timezone.now().isoformat())
+
+        return Response(
+            {
+                "message": "Password changed successfully.",
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class UserProfileView(APIView):
+    """
+    Get or update the current user's profile.
+
+    GET: Returns user profile information
+    PATCH: Updates allowed profile fields (name, timezone)
+    """
+
+    def get(self, request: Request):
+        serializer = UserProfileSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request: Request):
+        serializer = UserProfileSerializer(
+            request.user, data=request.data, partial=True
+        )
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)

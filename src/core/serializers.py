@@ -59,3 +59,52 @@ class UserSecuritySerializer(serializers.Serializer):
 
     email_verified = serializers.BooleanField(read_only=True)
     email_verified_at = serializers.DateTimeField(read_only=True, allow_null=True)
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    """Serializer for user profile (GET and PATCH)."""
+
+    email_verified = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ["id", "email", "name", "timezone", "email_verified", "created_at"]
+        read_only_fields = ["id", "email", "email_verified", "created_at"]
+
+    def get_email_verified(self, obj):
+        security = obj.get_security_metadata()
+        return security.get("email_verified", False)
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    """Serializer for password reset confirmation."""
+
+    token = serializers.CharField(required=True, help_text="Password reset token")
+    new_password = serializers.CharField(
+        required=True, min_length=8, write_only=True, help_text="New password"
+    )
+
+    def validate_new_password(self, value):
+        # Use Django's password validators
+        from django.contrib.auth.password_validation import validate_password
+
+        validate_password(value)
+        return value
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    """Serializer for changing password (authenticated users)."""
+
+    current_password = serializers.CharField(
+        required=True, write_only=True, help_text="Current password"
+    )
+    new_password = serializers.CharField(
+        required=True, min_length=8, write_only=True, help_text="New password"
+    )
+
+    def validate_new_password(self, value):
+        # Use Django's password validators
+        from django.contrib.auth.password_validation import validate_password
+
+        validate_password(value)
+        return value
