@@ -13,6 +13,7 @@ from config.frontend_models import (
 )
 from config.registry import Field, Section, register_config
 from config.validators import PortValidator, RangeValidator, Required, UrlValidator
+from todoapp.settings import DEBUG
 
 
 @register_config("core")
@@ -30,7 +31,10 @@ class CoreSysConfig:
             label="React App URL",
             placeholder="https://example.com",
             sort_order=10,
-            validators=[Required(), UrlValidator(schemes=["https"])],
+            validators=[
+                Required(),
+                UrlValidator(schemes=["https"] if not DEBUG else ["http", "https"]),
+            ],
         )
 
     class Cors(Section):
