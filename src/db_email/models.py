@@ -16,16 +16,18 @@ class EmailTemplate(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
+        is_new = self.pk is None
         super().save(*args, **kwargs)
 
-        # Create a Default Template Version for the newly created template
-        _default_template_version = EmailTemplateVersion.objects.create(
-            template=self,
-            version="v1",
-            is_active=True,
-            subject="Default Subject",
-            body="Default Body",
-        )
+        # Create a Default Template Version only for newly created templates
+        if is_new:
+            EmailTemplateVersion.objects.create(
+                template=self,
+                version="v1",
+                is_active=True,
+                subject="Default Subject",
+                body="Default Body",
+            )
 
     def __str__(self) -> str:
         return f"{self.identifier}"
