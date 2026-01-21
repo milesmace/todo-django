@@ -67,7 +67,7 @@ class AuthEmailService:
 
         send_mail(
             subject=content.subject,
-            message="Please view this email in an HTML-capable client",
+            message=content.body,
             html_message=content.body,
             from_email=cls._get_from_email(),
             recipient_list=[email],
