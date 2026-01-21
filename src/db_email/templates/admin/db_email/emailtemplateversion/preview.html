@@ -1,0 +1,193 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .preview-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .preview-header {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px 8px 0 0;
+        padding: 20px;
+        margin-bottom: 0;
+    }
+    .preview-meta {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 10px 20px;
+        margin-bottom: 15px;
+    }
+    .preview-meta dt {
+        font-weight: bold;
+        color: #495057;
+    }
+    .preview-meta dd {
+        margin: 0;
+        color: #212529;
+    }
+    .preview-subject {
+        background: #e9ecef;
+        padding: 15px 20px;
+        border-left: 1px solid #dee2e6;
+        border-right: 1px solid #dee2e6;
+        font-size: 18px;
+        font-weight: 500;
+    }
+    .preview-body-container {
+        border: 1px solid #dee2e6;
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        background: white;
+        min-height: 400px;
+    }
+    .preview-iframe {
+        width: 100%;
+        min-height: 500px;
+        border: none;
+        display: block;
+    }
+    .preview-error {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .preview-error h3 {
+        margin-top: 0;
+        color: #721c24;
+    }
+    .preview-error pre {
+        background: #fff;
+        padding: 10px;
+        border-radius: 4px;
+        overflow-x: auto;
+        margin-bottom: 0;
+    }
+    .preview-actions {
+        margin-top: 20px;
+        display: flex;
+        gap: 10px;
+    }
+    .preview-actions a {
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 4px;
+    }
+    .btn-edit {
+        background: #417690;
+        color: white;
+    }
+    .btn-edit:hover {
+        background: #205067;
+        color: white;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    .status-active {
+        background: #d4edda;
+        color: #155724;
+    }
+    .status-inactive {
+        background: #f8d7da;
+        color: #721c24;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; <a href="{% url 'admin:app_list' app_label='db_email' %}">Db_Email</a>
+    &rsaquo; <a href="{% url 'admin:db_email_emailtemplateversion_changelist' %}">Email Template Versions</a>
+    &rsaquo; <a href="{% url 'admin:db_email_emailtemplateversion_change' version.pk %}">{{ version }}</a>
+    &rsaquo; Preview
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="preview-container">
+    <div class="preview-header">
+        <dl class="preview-meta">
+            <dt>Template:</dt>
+            <dd>{{ version.template.identifier }}</dd>
+
+            <dt>Version:</dt>
+            <dd>{{ version.version }}</dd>
+
+            <dt>Status:</dt>
+            <dd>
+                {% if version.is_active %}
+                    <span class="status-badge status-active">Active</span>
+                {% else %}
+                    <span class="status-badge status-inactive">Inactive</span>
+                {% endif %}
+            </dd>
+
+            <dt>Last Updated:</dt>
+            <dd>{{ version.updated_at }}</dd>
+        </dl>
+    </div>
+
+    <div class="preview-subject">
+        <strong>Subject:</strong> {{ version.subject }}
+    </div>
+
+    {% if render_error %}
+    <div class="preview-error">
+        <h3>Template Rendering Error</h3>
+        <p>The template could not be rendered due to an error:</p>
+        <pre>{{ render_error }}</pre>
+    </div>
+    {% else %}
+    <div class="preview-body-container">
+        <iframe
+            class="preview-iframe"
+            srcdoc="{{ rendered_body|escapejs }}"
+            sandbox="allow-same-origin"
+            title="Email Preview"
+        ></iframe>
+    </div>
+    {% endif %}
+
+    <div class="preview-actions">
+        <a href="{% url 'admin:db_email_emailtemplateversion_change' version.pk %}" class="btn-edit">
+            Edit Version
+        </a>
+    </div>
+</div>
+
+<script>
+    // Auto-resize iframe to fit content
+    document.addEventListener('DOMContentLoaded', function() {
+        const iframe = document.querySelector('.preview-iframe');
+        if (iframe) {
+            iframe.onload = function() {
+                try {
+                    const height = iframe.contentWindow.document.body.scrollHeight;
+                    iframe.style.height = Math.max(height + 50, 500) + 'px';
+                } catch (e) {
+                    // Cross-origin restrictions, keep default height
+                }
+            };
+
+            // Set the content properly using srcdoc
+            const content = `{{ rendered_body|escapejs }}`;
+            iframe.srcdoc = content;
+        }
+    });
+</script>
+{% endblock %}
