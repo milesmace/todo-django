@@ -8,6 +8,6 @@ register = template.Library()
 def email_footer():
     return {
         "APP_URL": config.get("core.app.react_app_url"),
-        "CONTACT_EMAIL": "support@example.com",
+        "CONTACT_EMAIL": config.get("core.app.contact_email"),
         "HELP_URL": "https://example.com/help",
     }

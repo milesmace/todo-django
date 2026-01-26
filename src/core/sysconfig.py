@@ -12,7 +12,13 @@ from config.frontend_models import (
     TextareaFrontendModel,
 )
 from config.registry import Field, Section, register_config
-from config.validators import PortValidator, RangeValidator, Required, UrlValidator
+from config.validators import (
+    EmailValidator,
+    PortValidator,
+    RangeValidator,
+    Required,
+    UrlValidator,
+)
 from todoapp.settings import DEBUG
 
 
@@ -35,6 +41,14 @@ class CoreSysConfig:
                 Required(),
                 UrlValidator(schemes=["https"] if not DEBUG else ["http", "https"]),
             ],
+        )
+
+        contact_email = Field(
+            StringFrontendModel,
+            label="Contact Email",
+            placeholder="support@example.com",
+            sort_order=20,
+            validators=[EmailValidator()],
         )
 
     class Cors(Section):
