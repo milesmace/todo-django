@@ -1,3 +1,4 @@
+from config.accessor import config
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.utils import timezone
@@ -6,6 +7,12 @@ from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+)
+from rest_framework_simplejwt.views import (
+    TokenRefreshView as BaseTokenRefreshView,
+)
 from todo.models import Todo, TodoGroup
 from todo.views import TodoGroupViewSet, TodoViewSet
 from todoapp.settings import APP_CONFIG
@@ -38,6 +45,59 @@ class CoreTodoGroupViewSet(TodoGroupViewSet):
 class CoreTodoViewSet(TodoViewSet):
     def get_permissions(self):
         return [IsAppUserGroupMember()] + list(super().get_permissions())
+
+
+class LoginView(TokenObtainPairView):
+    """
+    Login a user and return a JWT token.
+    """
+
+    permission_classes = [AllowAny]
+
+    def post(self, request: Request):
+        response: Response = super().post(request)
+
+        refresh_token = response.data.pop("refresh")
+
+        response.set_cookie(
+            "refresh_token",
+            refresh_token,
+            httponly=True,
+            secure=True,
+            samesite="Strict",
+            path="/api/auth/login/refresh/",
+            max_age=config.get("core.auth.refresh_token_cookie_expiry"),
+        )
+
+        return response
+
+
+class TokenRefreshView(BaseTokenRefreshView):
+    """
+    Refresh a JWT token and return a new JWT token.
+    """
+
+    def post(self, request: Request):
+        refresh_token = request.COOKIES.get("refresh_token")
+        if not refresh_token:
+            return Response(
+                {
+                    "error": "Refresh token not found",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = self.get_serializer(data={"refresh": refresh_token})
+        serializer.is_valid(raise_exception=True)
+
+        response = Response(
+            {
+                "access": serializer.validated_data["access"],
+            },
+            status=status.HTTP_200_OK,
+        )
+
+        return response
 
 
 class RegisterView(APIView):

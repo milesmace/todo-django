@@ -98,6 +98,15 @@ class CoreSysConfig:
             validators=[RangeValidator(60, 86400)],
         )
 
+        refresh_token_cookie_expiry = Field(
+            IntegerFrontendModel,
+            label="Refresh Token Cookie Expiry (seconds)",
+            comment="How long refresh tokens remain valid. Provide a value between 3600 and 604800 seconds (1 hour and 1 week).",
+            default=86_400,  # 1 day
+            sort_order=20,
+            validators=[RangeValidator(3_600, 604_800)],
+        )
+
     class Email(Section):
         """Email settings."""
 

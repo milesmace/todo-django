@@ -209,6 +209,7 @@ REST_FRAMEWORK = {
     },
 }
 
+# Please make sure to manually sync this with the config values
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1) if DEBUG else timedelta(minutes=5),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7) if DEBUG else timedelta(days=1),
