@@ -61,11 +61,11 @@ class LoginView(TokenObtainPairView):
 
         response.set_cookie(
             "refresh_token",
-            refresh_token,
+            str(refresh_token),
             httponly=True,
             secure=True,
-            samesite="Strict",
-            path="/api/auth/login/refresh/",
+            samesite="None",
+            path="/api/auth/",
             max_age=config.get("core.auth.refresh_token_cookie_expiry"),
         )
 

@@ -49,6 +49,8 @@ Thumbs.db
 .env
 .env.local
 
+.certs/
+
 # Coverage
 .coverage
 htmlcov/

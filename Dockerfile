@@ -5,7 +5,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 # Set work directory
-WORKDIR /app
+WORKDIR /app/src
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -23,5 +23,11 @@ COPY . .
 # Expose port
 EXPOSE 8000
 
-# Run migrations and start server
-CMD ["sh", "-c", "python src/manage.py migrate && python src/manage.py runserver 0.0.0.0:8000"]
+# Create certs directory
+RUN mkdir -p /certs
+
+# Start server
+CMD ["echo hi; ", "gunicorn", "todoapp.wsgi:application", \
+     "--bind", "0.0.0.0:8000", \
+     "--workers", "3", \
+     "--timeout", "60"]

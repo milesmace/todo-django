@@ -171,7 +171,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR.parent.parent / "staticfiles"
+STATIC_ROOT = BASE_DIR.parent / "staticfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -280,6 +280,20 @@ CORS_ALLOWED_ORIGINS = []
 # This is also configurable via admin, but we set a sensible default
 CORS_ALLOW_CREDENTIALS = True
 
-# In DEBUG mode, allow all origins for easier development
-# In production, the signal handler validates against configured origins
-CORS_ALLOW_ALL_ORIGINS = not DEBUG
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
+CSRF_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_SAMESITE = "None"
+
+# Set cookie domain for cross-subdomain sharing (app.todoapp.local <-> api.todoapp.local)
+SESSION_COOKIE_DOMAIN = config("COOKIE_DOMAIN", default=None)
+CSRF_COOKIE_DOMAIN = config("COOKIE_DOMAIN", default=None)
+
+CSRF_TRUSTED_ORIGINS = config(
+    "CSRF_TRUSTED_ORIGINS",
+    default="",
+    cast=lambda v: [s.strip() for s in v.split(",") if s.strip()],
+)
