@@ -11,7 +11,7 @@
 
 set -e
 
-SERVICE="${1:-web}"
+SERVICE="${1:-api}"
 
 case "$SERVICE" in
     db)
