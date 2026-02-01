@@ -17,7 +17,7 @@ from todo.models import Todo, TodoGroup
 from todo.views import TodoGroupViewSet, TodoViewSet
 from todoapp.settings import APP_CONFIG
 
-from .permissions import IsAppUserGroupMember
+from .permissions import IsAppUserEmailVerified, IsAppUserGroupMember
 from .serializers import (
     ChangePasswordSerializer,
     ResendVerificationEmailSerializer,
@@ -39,12 +39,16 @@ User = get_user_model()
 
 class CoreTodoGroupViewSet(TodoGroupViewSet):
     def get_permissions(self):
-        return [IsAppUserGroupMember()] + list(super().get_permissions())
+        return [IsAppUserGroupMember(), IsAppUserEmailVerified()] + list(
+            super().get_permissions()
+        )
 
 
 class CoreTodoViewSet(TodoViewSet):
     def get_permissions(self):
-        return [IsAppUserGroupMember()] + list(super().get_permissions())
+        return [IsAppUserGroupMember(), IsAppUserEmailVerified()] + list(
+            super().get_permissions()
+        )
 
 
 class LoginView(TokenObtainPairView):

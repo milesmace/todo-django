@@ -207,6 +207,7 @@ REST_FRAMEWORK = {
         "resend_verification": "3/hour",
         "password_reset": "3/hour",
     },
+    "EXCEPTION_HANDLER": "core.exception_handler.custom_exception_handler",
 }
 
 # Please make sure to manually sync this with the config values
