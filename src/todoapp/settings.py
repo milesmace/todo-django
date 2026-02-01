@@ -238,6 +238,14 @@ if DEBUG:
 
     REST_FRAMEWORK["DEFAULT_THROTTLE_CLASSES"] = []
     REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {}
+else:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=config("SENTRY_DSN"),
+        send_default_pii=True,
+        environment=config("SENTRY_ENVIRONMENT", default="development"),
+    )
 
 APP_CONFIG = {
     "APP_USERS_GROUP_NAME": "App Users",
@@ -281,6 +289,7 @@ CORS_ALLOWED_ORIGINS = []
 CORS_ALLOW_CREDENTIALS = True
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
