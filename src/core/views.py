@@ -159,6 +159,22 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class LogoutView(APIView):
+    def post(self, _request: Request):
+        response = Response(
+            {"message": "Successfully logged out!"},
+            status=status.HTTP_200_OK,
+        )
+
+        response.delete_cookie(
+            key="refresh_token",
+            path="/api/auth/",
+            samesite="None",
+        )
+
+        return response
+
+
 class VerifyEmailView(APIView):
     """
     Verify a user's email address using a token.

@@ -6,6 +6,7 @@ from .views import (
     CoreTodoGroupViewSet,
     CoreTodoViewSet,
     LoginView,
+    LogoutView,
     RegisterView,
     RequestResetPasswordView,
     ResendVerificationEmailView,
@@ -24,6 +25,7 @@ urlpatterns = [
     path("auth/login/", LoginView.as_view(), name="login"),
     path("auth/login/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("auth/register/", RegisterView.as_view(), name="register"),
+    path("auth/logout/", LogoutView.as_view(), name="register"),
     # User profile
     path("me/", UserProfileView.as_view(), name="user_profile"),
     # Email verification
