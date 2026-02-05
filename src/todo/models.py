@@ -26,6 +26,7 @@ class Todo(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     is_completed = models.BooleanField(default=False)
+    due_date = models.DateTimeField(blank=True, null=True)
     group = models.ForeignKey(TodoGroup, on_delete=models.CASCADE, related_name="todos")
 
     created_at = models.DateTimeField(auto_now_add=True)
