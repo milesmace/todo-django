@@ -66,14 +66,6 @@ class CoreSysConfig:
             sort_order=10,
         )
 
-        allow_credentials = Field(
-            BooleanFrontendModel,
-            label="Allow Credentials",
-            comment="Allow cookies and authorization headers in cross-origin requests.",
-            default=True,
-            sort_order=20,
-        )
-
     class Auth(Section):
         """Authentication settings."""
 

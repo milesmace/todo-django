@@ -214,6 +214,7 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1) if DEBUG else timedelta(minutes=5),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7) if DEBUG else timedelta(days=1),
+    "UPDATE_LAST_LOGIN": True,
 }
 
 EMAIL_BACKEND = "email_log.email.EmailLogBackend"

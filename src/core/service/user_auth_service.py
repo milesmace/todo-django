@@ -23,8 +23,8 @@ class UserAuthService:
 
         token = TokenService.generate_email_verification_token(user)
 
-        frontend_url_template = config.get("core.app.react_app_url")
-        verify_url = f"{frontend_url_template}/verify-email?token={token}"
+        frontend_url = config.get("core.app.react_app_url")
+        verify_url = f"{frontend_url}/auth/verify-email?token={token}"
 
         AuthEmailService.send_verification_email(email, verify_url)
 
